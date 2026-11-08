@@ -3,8 +3,13 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { pool } from "./config/db.js";
 import serviciosRoutes from "./routes/servicios.routes.js";
+import authRoutes from "./routes/auth.routes.js";
 
 dotenv.config();
+
+if (!process.env.JWT_SECRET) {
+  throw new Error("Falta JWT_SECRET en el archivo .env");
+}
 
 const app = express();
 
@@ -26,6 +31,8 @@ app.get("/api/db-test", async (req, res) => {
 });
 
 app.use("/api/servicios", serviciosRoutes);
+app.use("/api/auth", authRoutes);
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
