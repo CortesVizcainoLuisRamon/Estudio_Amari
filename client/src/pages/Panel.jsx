@@ -1,15 +1,32 @@
 import { useAuth } from "../hooks/useAuth";
 
-function Panel({ titulo }) {
+const saludo = () => {
+  const hora = new Date().getHours();
+  if (hora < 12) return "¡Buenos días";
+  if (hora < 19) return "¡Buenas tardes";
+  return "¡Buenas noches";
+};
+
+function Panel() {
   const { usuario } = useAuth();
+  const fecha = new Date().toLocaleDateString("es-MX", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-pink-50 px-4 py-10 text-center">
-      <h1 className="text-2xl font-bold text-pink-700">{titulo}</h1>
-      <p className="mt-2 text-gray-600">
-        Sesión iniciada como {usuario.nombre} {usuario.apellidos} ({usuario.rol})
-      </p>
-    </main>
+    <>
+      <h1 className="font-display text-3xl font-semibold text-amari-titulo">
+        {saludo()}, {usuario.nombre}!
+      </h1>
+      <p className="mt-1 text-sm capitalize text-amari-acento">{fecha}</p>
+
+      <div className="tarjeta mt-8 p-10 text-center text-sm text-amari-acento">
+        El resumen de tu panel aparecerá aquí.
+      </div>
+    </>
   );
 }
 

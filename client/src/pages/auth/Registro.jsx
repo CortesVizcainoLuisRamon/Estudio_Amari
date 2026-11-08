@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Sparkles } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { rutaPorRol } from "../../routes/rutaPorRol";
-
-const inputClase =
-  "mb-4 w-full rounded border border-pink-200 px-3 py-2 focus:border-pink-500 focus:outline-none";
+import AuthLayout from "../../components/AuthLayout";
+import Campo from "../../components/Campo";
 
 function Registro() {
   const { registro } = useAuth();
@@ -34,12 +34,12 @@ function Registro() {
     setEnviando(true);
     try {
       const usuario = await registro({
-  nombre: form.nombre,
-  apellidos: form.apellidos,
-  email: form.email,
-  telefono: form.telefono,
-  password: form.password,
-});
+        nombre: form.nombre,
+        apellidos: form.apellidos,
+        email: form.email,
+        telefono: form.telefono,
+        password: form.password,
+      });
       navigate(rutaPorRol(usuario.rol), { replace: true });
     } catch (err) {
       setError(err.response?.data?.mensaje || "No se pudo completar el registro");
@@ -49,37 +49,67 @@ function Registro() {
   };
 
   return (
-    <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-pink-50 px-4 py-10">
-      <form onSubmit={enviar} className="w-full max-w-md rounded-2xl bg-white p-8 shadow">
-        <h1 className="mb-6 text-center text-2xl font-bold text-pink-700">Crear cuenta</h1>
-
+    <AuthLayout
+      titulo="Crea tu cuenta"
+      subtitulo="Regístrate para agendar tus citas"
+      activa="registro"
+    >
+      <form onSubmit={enviar}>
         {error && (
-          <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+          <p className="mb-4 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
         )}
 
-        <input name="nombre" placeholder="Nombre" required value={form.nombre} onChange={cambiar} className={inputClase} />
-        <input name="apellidos" placeholder="Apellidos" required value={form.apellidos} onChange={cambiar} className={inputClase} />
-        <input name="email" type="email" placeholder="Correo" required value={form.email} onChange={cambiar} className={inputClase} />
-        <input name="telefono" type="tel" placeholder="Teléfono (opcional)" value={form.telefono} onChange={cambiar} className={inputClase} />
-        <input name="password" type="password" placeholder="Contraseña (mínimo 8 caracteres)" required minLength={8} value={form.password} onChange={cambiar} className={inputClase} />
-        <input name="confirmar" type="password" placeholder="Confirmar contraseña" required value={form.confirmar} onChange={cambiar} className={inputClase} />
+        <div className="grid gap-x-3 sm:grid-cols-2">
+          <Campo id="nombre" name="nombre" etiqueta="Nombre" required value={form.nombre} onChange={cambiar} />
+          <Campo id="apellidos" name="apellidos" etiqueta="Apellidos" required value={form.apellidos} onChange={cambiar} />
+        </div>
+        <Campo
+          id="email"
+          name="email"
+          type="email"
+          etiqueta="Correo electrónico"
+          placeholder="tu@correo.com"
+          autoComplete="email"
+          required
+          value={form.email}
+          onChange={cambiar}
+        />
+        <Campo
+          id="telefono"
+          name="telefono"
+          type="tel"
+          etiqueta="Teléfono (opcional)"
+          value={form.telefono}
+          onChange={cambiar}
+        />
+        <Campo
+          id="password"
+          name="password"
+          type="password"
+          etiqueta="Contraseña (mínimo 8 caracteres)"
+          autoComplete="new-password"
+          required
+          minLength={8}
+          value={form.password}
+          onChange={cambiar}
+        />
+        <Campo
+          id="confirmar"
+          name="confirmar"
+          type="password"
+          etiqueta="Confirmar contraseña"
+          autoComplete="new-password"
+          required
+          value={form.confirmar}
+          onChange={cambiar}
+        />
 
-        <button
-          type="submit"
-          disabled={enviando}
-          className="w-full rounded bg-pink-600 py-2 font-medium text-white hover:bg-pink-700 disabled:opacity-60"
-        >
-          {enviando ? "Creando cuenta..." : "Registrarme"}
+        <button type="submit" disabled={enviando} className="btn-primario w-full py-3">
+          <Sparkles size={16} />
+          {enviando ? "Creando cuenta..." : "Crear cuenta"}
         </button>
-
-        <p className="mt-4 text-center text-sm text-gray-600">
-          ¿Ya tienes cuenta?{" "}
-          <Link to="/login" className="font-medium text-pink-700 hover:underline">
-            Inicia sesión
-          </Link>
-        </p>
       </form>
-    </main>
+    </AuthLayout>
   );
 }
 

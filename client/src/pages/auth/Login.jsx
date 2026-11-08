@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Sparkles } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { rutaPorRol } from "../../routes/rutaPorRol";
-import logo from "../../assets/branding/logo-amari-cuadrado.png";
+import AuthLayout from "../../components/AuthLayout";
+import Campo from "../../components/Campo";
 
 function Login() {
   const { login } = useAuth();
@@ -29,53 +31,45 @@ function Login() {
   };
 
   return (
-    <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-pink-50 px-4 py-10">
-      <form onSubmit={enviar} className="w-full max-w-sm rounded-2xl bg-white p-8 shadow">
-        <img src={logo} alt="Estudio Amari" className="mx-auto mb-4 h-24 w-24 rounded-full object-cover" />
-        <h1 className="mb-6 text-center text-2xl font-bold text-pink-700">Iniciar sesión</h1>
-
+    <AuthLayout
+      titulo="Bienvenida de vuelta"
+      subtitulo="Inicia sesión para continuar"
+      activa="login"
+    >
+      <form onSubmit={enviar}>
         {error && (
-          <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+          <p className="mb-4 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
         )}
 
-        <label className="mb-1 block text-sm text-gray-600" htmlFor="email">Correo</label>
-        <input
+        <Campo
           id="email"
           name="email"
           type="email"
+          etiqueta="Correo electrónico"
+          placeholder="tu@correo.com"
+          autoComplete="email"
           required
           value={form.email}
           onChange={cambiar}
-          className="mb-4 w-full rounded border border-pink-200 px-3 py-2 focus:border-pink-500 focus:outline-none"
         />
-
-        <label className="mb-1 block text-sm text-gray-600" htmlFor="password">Contraseña</label>
-        <input
+        <Campo
           id="password"
           name="password"
           type="password"
+          etiqueta="Contraseña"
+          placeholder="••••••••"
+          autoComplete="current-password"
           required
           value={form.password}
           onChange={cambiar}
-          className="mb-6 w-full rounded border border-pink-200 px-3 py-2 focus:border-pink-500 focus:outline-none"
         />
 
-        <button
-          type="submit"
-          disabled={enviando}
-          className="w-full rounded bg-pink-600 py-2 font-medium text-white hover:bg-pink-700 disabled:opacity-60"
-        >
-          {enviando ? "Entrando..." : "Entrar"}
+        <button type="submit" disabled={enviando} className="btn-primario w-full py-3">
+          <Sparkles size={16} />
+          {enviando ? "Entrando..." : "Iniciar sesión"}
         </button>
-
-        <p className="mt-4 text-center text-sm text-gray-600">
-          ¿No tienes cuenta?{" "}
-          <Link to="/registro" className="font-medium text-pink-700 hover:underline">
-            Regístrate
-          </Link>
-        </p>
       </form>
-    </main>
+    </AuthLayout>
   );
 }
 

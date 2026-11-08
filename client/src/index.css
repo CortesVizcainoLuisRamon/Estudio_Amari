@@ -1,1 +1,33 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", Georgia, serif;
+
+  --color-amari-bg: #fffbfd;
+  --color-amari-bg-soft: #fff5f8;
+  --color-amari-borde: #fbd5e5;
+  --color-amari-primario: #e63088;
+  --color-amari-primario-oscuro: #c51970;
+  --color-amari-acento: #f953a0;
+  --color-amari-titulo: #4a0a2b;
+  --color-amari-texto: #7a4a64;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-amari-bg);
+    color: var(--color-amari-texto);
+    font-family: var(--font-sans);
+  }
+}
+
+@layer components {
+  .btn-primario {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-amari-primario to-amari-primario-oscuro px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-amari-primario/30 transition hover:brightness-105 disabled:opacity-60;
+  }
+
+  .tarjeta {
+    @apply rounded-2xl border border-amari-borde bg-white shadow-sm;
+  }
+}

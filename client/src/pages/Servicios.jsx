@@ -42,7 +42,7 @@ function Servicios() {
     };
   }, []);
 
-  if (cargando) return <p className="p-8 text-center text-pink-700">Cargando servicios...</p>;
+  if (cargando) return <p className="p-8 text-center text-amari-primario">Cargando servicios...</p>;
   if (error) return <p className="p-8 text-center text-red-600">{error}</p>;
 
   const porCategoria = servicios.reduce((grupos, servicio) => {
@@ -52,25 +52,30 @@ function Servicios() {
   }, {});
 
   return (
-    <main className="min-h-screen bg-pink-50 px-4 py-10">
-      <h1 className="mb-10 text-center text-3xl font-bold text-pink-700">
+    <main className="min-h-[calc(100vh-4rem)] bg-amari-bg px-4 py-10">
+      <h1 className="text-center font-display text-3xl font-semibold text-amari-titulo">
         Servicios de Estudio Amari
       </h1>
+      <p className="mb-10 mt-1 text-center text-sm text-amari-acento">
+        Conoce lo que ofrecemos para tu belleza
+      </p>
 
-      <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-2">
+      <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
         {Object.entries(porCategoria).map(([categoria, lista]) => (
-          <section key={categoria} className="rounded-2xl bg-white p-6 shadow">
-            <h2 className="mb-4 text-xl font-semibold text-pink-800">{categoria}</h2>
-            <ul className="divide-y divide-pink-100">
+          <section key={categoria} className="tarjeta p-6">
+            <h2 className="mb-4 font-display text-xl font-semibold text-amari-titulo">
+              {categoria}
+            </h2>
+            <ul className="divide-y divide-amari-borde">
               {lista.map((servicio) => (
                 <li key={servicio.id} className="flex items-center justify-between py-3">
                   <div>
-                    <p className="font-medium text-gray-800">{servicio.nombre}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="font-medium text-amari-titulo">{servicio.nombre}</p>
+                    <p className="text-sm text-amari-texto">
                       {formatearDuracion(servicio.duracion_min)}
                     </p>
                   </div>
-                  <span className="ml-4 text-sm font-medium text-pink-700">
+                  <span className="ml-4 text-sm font-semibold text-amari-primario">
                     {formatearPrecio(servicio)}
                   </span>
                 </li>
