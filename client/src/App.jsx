@@ -1,35 +1,31 @@
-import { Routes, Route, Outlet } from "react-router-dom";
-import Navbar from "./components/Navbar";
+import { Routes, Route } from "react-router-dom";
 import RutaProtegida from "./routes/RutaProtegida";
+import RedirigirInicio from "./routes/RedirigirInicio";
 import AppLayout from "./layouts/AppLayout";
-import Servicios from "./pages/Servicios";
 import Login from "./pages/auth/Login";
 import Registro from "./pages/auth/Registro";
 import Panel from "./pages/Panel";
 import Proximamente from "./pages/Proximamente";
+import ServiciosAdmin from "./pages/admin/ServiciosAdmin";
 
-const ROLES = ["admin", "empleado", "cliente"];
-
-function LayoutPublico() {
-  return (
-    <>
-      <Navbar />
-      <Outlet />
-    </>
-  );
-}
+const ROLES_SIMPLES = ["empleado", "cliente"];
 
 function App() {
   return (
     <Routes>
-      <Route element={<LayoutPublico />}>
-        <Route path="/" element={<Servicios />} />
-      </Route>
-
+      <Route path="/" element={<RedirigirInicio />} />
       <Route path="/login" element={<Login />} />
       <Route path="/registro" element={<Registro />} />
 
-      {ROLES.map((rol) => (
+      <Route element={<RutaProtegida roles={["admin"]} />}>
+        <Route element={<AppLayout />}>
+          <Route path="/admin" element={<Panel />} />
+          <Route path="/admin/servicios" element={<ServiciosAdmin />} />
+          <Route path="/admin/*" element={<Proximamente />} />
+        </Route>
+      </Route>
+
+      {ROLES_SIMPLES.map((rol) => (
         <Route key={rol} element={<RutaProtegida roles={[rol]} />}>
           <Route element={<AppLayout />}>
             <Route path={`/${rol}`} element={<Panel />} />
