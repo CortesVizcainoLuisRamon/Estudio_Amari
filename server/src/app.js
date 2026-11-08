@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { pool } from "./config/db.js";
+import serviciosRoutes from "./routes/servicios.routes.js";
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.get("/api/db-test", async (req, res) => {
   }
 });
 
+app.use("/api/servicios", serviciosRoutes);
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
