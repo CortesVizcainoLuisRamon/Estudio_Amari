@@ -284,7 +284,7 @@ function ModalCitaCliente({ onCerrar, onGuardado }) {
 
               {seleccionValida && (
                 <div className="mt-4 rounded-xl bg-amari-bg-soft p-3 text-sm text-amari-titulo">
-                  <p className="font-semibold capitalize">{fechaLarga(fecha)}</p>
+                  <p className="font-semibold">{fechaLarga(fecha)}</p>
                   <p>
                     {seleccion.hora} a {horaMasMinutos(seleccion.hora, duracionTotal)} ·{" "}
                     {grupoElegido.nombre}

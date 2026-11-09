@@ -91,7 +91,7 @@ function DashboardAdmin() {
           <h1 className="font-display text-3xl font-semibold text-amari-titulo">
             Hola, {usuario.nombre}
           </h1>
-          <p className="mt-1 text-sm capitalize text-amari-acento">
+          <p className="mt-1 text-sm text-amari-acento">
             {d ? fechaLarga(d.fecha) : "Resumen del día"}
           </p>
         </div>
@@ -221,7 +221,7 @@ function DashboardAdmin() {
             </section>
 
             <section>
-              <h2 className="mb-3 font-display text-xl font-semibold capitalize text-amari-titulo">
+              <h2 className="mb-3 font-display text-xl font-semibold text-amari-titulo">
                 Ingresos de {mes}
               </h2>
               <div className="tarjeta space-y-3 p-5 text-sm">
@@ -250,7 +250,7 @@ function DashboardAdmin() {
             </section>
 
             <section className="lg:col-span-2">
-              <h2 className="mb-3 font-display text-xl font-semibold capitalize text-amari-titulo">
+              <h2 className="mb-3 font-display text-xl font-semibold text-amari-titulo">
                 Servicios más pedidos en {mes}
               </h2>
               <div className="tarjeta space-y-3 p-5">

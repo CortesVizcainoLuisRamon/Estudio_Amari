@@ -402,7 +402,7 @@ function ModalCita({ onCerrar, onGuardado }) {
 
               {horaValida && (
                 <div className="mt-4 rounded-xl bg-amari-bg-soft p-3 text-sm text-amari-titulo">
-                  <p className="font-semibold capitalize">{fechaLarga(fecha)}</p>
+                  <p className="font-semibold">{fechaLarga(fecha)}</p>
                   <p>
                     {hora} a {horaMasMinutos(hora, duracionTotal)} · {cliente?.nombre}{" "}
                     {cliente?.apellidos} · {especialista?.nombre}

@@ -42,7 +42,7 @@ function TarjetaCita({ cita, puedeCancelar, onCambio }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-semibold capitalize">{fechaLarga(cita.inicio.slice(0, 10))}</p>
+          <p className="font-semibold">{fechaLarga(cita.inicio.slice(0, 10))}</p>
           <p className="text-amari-acento">
             {horaDe(cita.inicio)} a {horaDe(cita.fin)} · {cita.empleada}
           </p>

@@ -59,7 +59,7 @@ function DetalleCita({ cita, onCerrar, onCambio }) {
 
         <div className="space-y-4 px-6 py-5 text-sm text-amari-titulo">
           <div className="flex items-center justify-between">
-            <p className="font-semibold capitalize">{fechaLarga(cita.inicio.slice(0, 10))}</p>
+            <p className="font-semibold">{fechaLarga(cita.inicio.slice(0, 10))}</p>
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${estado.clase}`}>
               {estado.texto}
             </span>

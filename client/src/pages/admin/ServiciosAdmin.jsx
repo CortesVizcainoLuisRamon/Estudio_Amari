@@ -102,18 +102,20 @@ function ServiciosAdmin() {
               No hay servicios en esta categoría.
             </p>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {visibles.map((s) => (
                 <article
                   key={s.id}
-                  className={`tarjeta group p-4 transition hover:shadow-md ${
+                  className={`tarjeta group min-w-0 p-4 transition hover:shadow-md ${
                     s.activo ? "" : "opacity-60"
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-xl">{iconoCategoria(s.categoria)}</span>
+                    <span className="shrink-0 text-xl">{iconoCategoria(s.categoria)}</span>
                     <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-semibold text-amari-titulo">{s.nombre}</h3>
+                      <h3 className="break-words font-semibold leading-snug text-amari-titulo">
+                        {s.nombre}
+                      </h3>
                       <p className="text-xs text-amari-acento">
                         {s.categoria}
                         {!s.activo && " · Inactivo"}
@@ -122,14 +124,14 @@ function ServiciosAdmin() {
                     <button
                       onClick={() => setModal({ servicio: s })}
                       aria-label={`Editar ${s.nombre}`}
-                      className="rounded-lg p-1.5 text-amari-acento transition hover:bg-amari-bg-soft focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                      className="shrink-0 rounded-lg p-1.5 text-amari-acento transition hover:bg-amari-bg-soft focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                     >
                       <Pencil size={16} />
                     </button>
                   </div>
-                  <div className="mt-4 flex items-end justify-between">
-                    <span className="text-xs text-amari-acento">{s.duracion_min} min</span>
-                    <span className="font-display text-xl font-semibold text-amari-titulo">
+                  <div className="mt-4 flex items-end justify-between gap-3">
+                    <span className="shrink-0 text-xs text-amari-acento">{s.duracion_min} min</span>
+                    <span className="text-right font-display text-xl font-semibold text-amari-titulo">
                       {formatearPrecio(s)}
                     </span>
                   </div>

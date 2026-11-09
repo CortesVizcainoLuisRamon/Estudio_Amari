@@ -39,10 +39,12 @@ export const horaMasMinutos = (hora, minutos) => {
   return `${dos(Math.floor(total / 60))}:${dos(total % 60)}`;
 };
 
-export const fechaLarga = (texto) =>
-  deTexto(texto).toLocaleDateString("es-MX", {
+export const fechaLarga = (texto) => {
+  const fecha = deTexto(texto).toLocaleDateString("es-MX", {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   });
+  return fecha.charAt(0).toUpperCase() + fecha.slice(1);
+};

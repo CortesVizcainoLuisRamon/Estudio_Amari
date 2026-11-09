@@ -202,7 +202,7 @@ function AgendaAdmin() {
             <div className="space-y-6">
               {Object.entries(porDia).map(([dia, lista]) => (
                 <section key={dia}>
-                  <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold capitalize text-amari-titulo">
+                  <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-amari-titulo">
                     {etiquetaDia(dia) && (
                       <span className="rounded-full bg-amari-primario px-2.5 py-0.5 text-xs text-white">
                         {etiquetaDia(dia)}
