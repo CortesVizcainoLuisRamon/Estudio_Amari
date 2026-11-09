@@ -32,9 +32,10 @@ function ModalCliente({ cliente, onCerrar, onGuardado }) {
     setEnviando(true);
 
     try {
-      if (editando) await actualizarCliente(cliente.id, form);
-      else await crearCliente(form);
-      onGuardado();
+            const guardado = editando
+        ? await actualizarCliente(cliente.id, form)
+        : await crearCliente(form);
+      onGuardado(guardado);
     } catch (err) {
       setError(err.response?.data?.mensaje || "No se pudo guardar el cliente");
       setEnviando(false);

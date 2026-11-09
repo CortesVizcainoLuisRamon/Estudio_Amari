@@ -6,9 +6,10 @@ import Login from "./pages/auth/Login";
 import Registro from "./pages/auth/Registro";
 import Panel from "./pages/Panel";
 import Proximamente from "./pages/Proximamente";
+import AgendaAdmin from "./pages/admin/AgendaAdmin";
+import ClientesAdmin from "./pages/admin/ClientesAdmin";
 import ServiciosAdmin from "./pages/admin/ServiciosAdmin";
 import EmpleadosAdmin from "./pages/admin/EmpleadosAdmin";
-import ClientesAdmin from "./pages/admin/ClientesAdmin";
 
 const ROLES_SIMPLES = ["empleado", "cliente"];
 
@@ -22,6 +23,7 @@ function App() {
       <Route element={<RutaProtegida roles={["admin"]} />}>
         <Route element={<AppLayout />}>
           <Route path="/admin" element={<Panel />} />
+          <Route path="/admin/citas" element={<AgendaAdmin />} />
           <Route path="/admin/clientes" element={<ClientesAdmin />} />
           <Route path="/admin/servicios" element={<ServiciosAdmin />} />
           <Route path="/admin/empleados" element={<EmpleadosAdmin />} />
