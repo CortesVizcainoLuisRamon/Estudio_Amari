@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import { pool } from "./config/db.js";
 import serviciosRoutes from "./routes/servicios.routes.js";
 import authRoutes from "./routes/auth.routes.js";
+import empleadosRoutes from "./routes/empleados.routes.js";
+import clientesRoutes from "./routes/clientes.routes.js";
 
 dotenv.config();
 
@@ -32,6 +34,8 @@ app.get("/api/db-test", async (req, res) => {
 
 app.use("/api/servicios", serviciosRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/empleados", empleadosRoutes);
+app.use("/api/clientes", clientesRoutes);
 
 const PORT = process.env.PORT || 3000;
 

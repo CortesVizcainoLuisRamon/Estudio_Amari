@@ -30,6 +30,7 @@ CREATE TABLE clientes (
   telefono VARCHAR(20),
   email VARCHAR(120),
   notas TEXT,
+  fecha_nacimiento DATE NULL,
   creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -38,6 +39,9 @@ CREATE TABLE empleados (
   id INT AUTO_INCREMENT PRIMARY KEY,
   usuario_id INT NOT NULL UNIQUE,
   puesto VARCHAR(60),
+  ADD COLUMN comision_pct DECIMAL(5,2) NOT NULL DEFAULT 0 AFTER puesto,
+  ADD COLUMN color VARCHAR(7) NOT NULL DEFAULT '#e879f9' AFTER comision_pct,
+  ADD COLUMN dias_laborales VARCHAR (20) NOT NULL DEFAULT '1,2,3,4,5,6' AFTER color,
   activo BOOLEAN NOT NULL DEFAULT TRUE,
   FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -55,6 +59,7 @@ CREATE TABLE servicios (
   precio DECIMAL(10,2) NULL,
   precio_desde BOOLEAN NOT NULL DEFAULT FALSE,
   duracion_min INT NOT NULL,
+  requiere_patch_test BOOLEAN NOT NULL DEFAULT FLASE,
   activo BOOLEAN NOT NULL DEFAULT TRUE,
   FOREIGN KEY (categoria_id) REFERENCES categorias_servicio(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
