@@ -11,6 +11,7 @@ import ClientesAdmin from "./pages/admin/ClientesAdmin";
 import ServiciosAdmin from "./pages/admin/ServiciosAdmin";
 import EmpleadosAdmin from "./pages/admin/EmpleadosAdmin";
 import MisCitas from "./pages/cliente/MisCitas";
+import DashboardAdmin from "./pages/admin/DashboardAdmin";
 
 const ROLES_SIMPLES = ["empleado"];
 
@@ -23,7 +24,7 @@ function App() {
 
       <Route element={<RutaProtegida roles={["admin"]} />}>
         <Route element={<AppLayout />}>
-          <Route path="/admin" element={<Panel />} />
+          <Route path="/admin" element={<DashboardAdmin />} />          
           <Route path="/admin/citas" element={<AgendaAdmin />} />
           <Route path="/admin/clientes" element={<ClientesAdmin />} />
           <Route path="/admin/servicios" element={<ServiciosAdmin />} />

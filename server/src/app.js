@@ -7,6 +7,7 @@ import authRoutes from "./routes/auth.routes.js";
 import empleadosRoutes from "./routes/empleados.routes.js";
 import clientesRoutes from "./routes/clientes.routes.js";
 import citasRoutes from "./routes/citas.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/empleados", empleadosRoutes);
 app.use("/api/clientes", clientesRoutes);
 app.use("/api/citas", citasRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 const PORT = process.env.PORT || 3000;
 

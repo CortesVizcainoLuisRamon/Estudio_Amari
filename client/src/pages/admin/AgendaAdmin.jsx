@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { getCitas, cambiarEstado } from "../../services/citas.service";
 import ModalCita from "../../components/ModalCita";
@@ -41,8 +42,11 @@ const claseFiltro = (activo) =>
   }`;
 
 function AgendaAdmin() {
+    const [params] = useSearchParams();
   const [vista, setVista] = useState("proximas");
-  const [filtro, setFiltro] = useState("todas");
+  const [filtro, setFiltro] = useState(
+    params.get("filtro") === "pendientes" ? "pendientes" : "todas"
+  );
   const [lunes, setLunes] = useState(() => inicioSemana(new Date()));
   const [hoy] = useState(() => aTexto(new Date()));
   const [ahora] = useState(textoAhora);

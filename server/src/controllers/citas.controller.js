@@ -63,7 +63,7 @@ const clienteDeUsuario = async (usuarioId) => {
   return rows[0]?.id ?? null;
 };
 
-const SELECT_CITAS = `
+export const SELECT_CITAS = `
   SELECT c.id, c.cliente_id, c.empleado_id, c.estado, c.total, c.notas,
          DATE_FORMAT(c.inicio, '%Y-%m-%d %H:%i') AS inicio,
          DATE_FORMAT(c.fin, '%Y-%m-%d %H:%i') AS fin,
@@ -76,7 +76,7 @@ const SELECT_CITAS = `
   JOIN usuarios u ON u.id = e.usuario_id
 `;
 
-const adjuntarServicios = async (citas) => {
+export const adjuntarServicios = async (citas) => {
   if (citas.length === 0) return [];
 
   const [rel] = await pool.query(
