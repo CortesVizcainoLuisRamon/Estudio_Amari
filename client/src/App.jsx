@@ -10,8 +10,9 @@ import AgendaAdmin from "./pages/admin/AgendaAdmin";
 import ClientesAdmin from "./pages/admin/ClientesAdmin";
 import ServiciosAdmin from "./pages/admin/ServiciosAdmin";
 import EmpleadosAdmin from "./pages/admin/EmpleadosAdmin";
+import MisCitas from "./pages/cliente/MisCitas";
 
-const ROLES_SIMPLES = ["empleado", "cliente"];
+const ROLES_SIMPLES = ["empleado"];
 
 function App() {
   return (
@@ -28,6 +29,13 @@ function App() {
           <Route path="/admin/servicios" element={<ServiciosAdmin />} />
           <Route path="/admin/empleados" element={<EmpleadosAdmin />} />
           <Route path="/admin/*" element={<Proximamente />} />
+        </Route>
+      </Route>
+
+      <Route element={<RutaProtegida roles={["cliente"]} />}>
+        <Route element={<AppLayout />}>
+          <Route path="/cliente" element={<MisCitas />} />
+          <Route path="/cliente/*" element={<Proximamente />} />
         </Route>
       </Route>
 

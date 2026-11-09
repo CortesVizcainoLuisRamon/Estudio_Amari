@@ -4,6 +4,8 @@ import { APERTURA_MIN, CIERRE_MIN, INTERVALO_MIN } from "../config/horario.js";
 const ESTADOS = ["pendiente", "confirmada", "completada", "cancelada", "no_asistio"];
 const FECHA_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const HORA_REGEX = /^\d{2}:\d{2}$/;
+const MAX_CITAS_ACTIVAS = 3;
+const MIN_HORAS_CANCELAR = 12;
 
 class ErrorCita extends Error {
   constructor(status, mensaje) {
@@ -53,6 +55,11 @@ const cargarServicios = async (conexion, ids) => {
 
 const empleadaDeUsuario = async (usuarioId) => {
   const [rows] = await pool.query("SELECT id FROM empleados WHERE usuario_id = ?", [usuarioId]);
+  return rows[0]?.id ?? null;
+};
+
+const clienteDeUsuario = async (usuarioId) => {
+  const [rows] = await pool.query("SELECT id FROM clientes WHERE usuario_id = ?", [usuarioId]);
   return rows[0]?.id ?? null;
 };
 
@@ -213,8 +220,21 @@ export const obtenerDisponibilidad = async (req, res) => {
 };
 
 export const crearCita = async (req, res) => {
-  const d = req.body ?? {};
-  const clienteId = Number(d.cliente_id);
+    const d = req.body ?? {};
+  let clienteId = Number(d.cliente_id);
+
+  // Una clienta solo puede agendar para sí misma: su id sale de la sesión, no del formulario
+  if (req.usuario.rol === "cliente") {
+    try {
+      clienteId = await clienteDeUsuario(req.usuario.id);
+    } catch (err) {
+      console.error("Error al buscar la clienta:", err.message);
+      return res.status(500).json({ ok: false, mensaje: "Error al crear la cita" });
+    }
+    if (!clienteId) {
+      return res.status(403).json({ ok: false, mensaje: "Tu cuenta no tiene perfil de clienta" });
+    }
+  }
   const empleadoId = Number(d.empleado_id);
   const ids = normalizarIds(d.servicios_ids);
   const fecha = typeof d.fecha === "string" ? d.fecha.trim() : "";
@@ -284,6 +304,20 @@ export const crearCita = async (req, res) => {
 
     const [cliente] = await conexion.query("SELECT id FROM clientes WHERE id = ?", [clienteId]);
     if (cliente.length === 0) throw new ErrorCita(404, "El cliente no existe");
+
+    if (req.usuario.rol === "cliente") {
+      const [activas] = await conexion.query(
+        `SELECT COUNT(*) AS n FROM citas
+         WHERE cliente_id = ? AND estado IN ('pendiente', 'confirmada') AND inicio > NOW()`,
+        [clienteId]
+      );
+      if (activas[0].n >= MAX_CITAS_ACTIVAS) {
+        throw new ErrorCita(
+          400,
+          `Ya tienes ${MAX_CITAS_ACTIVAS} citas próximas. Cancela una o espera a que se realice para agendar otra.`
+        );
+      }
+    }
 
     const inicio = `${fecha} ${minAHora(inicioMin)}:00`;
     const fin = `${fecha} ${minAHora(finMin)}:00`;
@@ -362,5 +396,66 @@ export const cambiarEstado = async (req, res) => {
   } catch (err) {
     console.error("Error al cambiar el estado:", err.message);
     res.status(500).json({ ok: false, mensaje: "Error al cambiar el estado de la cita" });
+  }
+};
+
+
+export const obtenerMisCitas = async (req, res) => {
+  try {
+    const clienteId = await clienteDeUsuario(req.usuario.id);
+    if (!clienteId) return res.json({ ok: true, total: 0, data: [] });
+
+    const [rows] = await pool.query(
+      `${SELECT_CITAS}
+       WHERE c.cliente_id = ?
+       ORDER BY c.inicio DESC
+       LIMIT 100`,
+      [clienteId]
+    );
+
+    const data = await adjuntarServicios(rows);
+    res.json({ ok: true, total: data.length, data });
+  } catch (err) {
+    console.error("Error al obtener mis citas:", err.message);
+    res.status(500).json({ ok: false, mensaje: "Error al obtener tus citas" });
+  }
+};
+
+export const cancelarMiCita = async (req, res) => {
+  try {
+    const clienteId = await clienteDeUsuario(req.usuario.id);
+    if (!clienteId) {
+      return res.status(403).json({ ok: false, mensaje: "Tu cuenta no tiene perfil de clienta" });
+    }
+
+    const [rows] = await pool.query(
+      `SELECT id, estado, TIMESTAMPDIFF(MINUTE, NOW(), inicio) AS minutos
+       FROM citas WHERE id = ? AND cliente_id = ?`,
+      [req.params.id, clienteId]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ ok: false, mensaje: "Cita no encontrada" });
+    }
+
+    const cita = rows[0];
+
+    if (!["pendiente", "confirmada"].includes(cita.estado)) {
+      return res.status(400).json({ ok: false, mensaje: "Esta cita ya no se puede cancelar" });
+    }
+    if (cita.minutos < MIN_HORAS_CANCELAR * 60) {
+      return res.status(400).json({
+        ok: false,
+        mensaje: `Solo puedes cancelar con al menos ${MIN_HORAS_CANCELAR} horas de anticipación. Comunícate con el estudio.`,
+      });
+    }
+
+    await pool.query("UPDATE citas SET estado = 'cancelada' WHERE id = ?", [cita.id]);
+
+    const [actual] = await pool.query(`${SELECT_CITAS} WHERE c.id = ?`, [cita.id]);
+    const [actualizada] = await adjuntarServicios(actual);
+    res.json({ ok: true, data: actualizada });
+  } catch (err) {
+    console.error("Error al cancelar la cita:", err.message);
+    res.status(500).json({ ok: false, mensaje: "Error al cancelar la cita" });
   }
 };

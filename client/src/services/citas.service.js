@@ -21,3 +21,13 @@ export const cambiarEstado = async (id, estado) => {
   const { data } = await api.patch(`/citas/${id}/estado`, { estado });
   return data.data;
 };
+
+export const getMisCitas = async () => {
+  const { data } = await api.get("/citas/mis-citas");
+  return data.data;
+};
+
+export const cancelarMiCita = async (id) => {
+  const { data } = await api.patch(`/citas/${id}/cancelar`);
+  return data.data;
+};
