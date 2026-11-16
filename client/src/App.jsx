@@ -13,6 +13,7 @@ import EmpleadosAdmin from "./pages/admin/EmpleadosAdmin";
 import MisCitas from "./pages/cliente/MisCitas";
 import DashboardEmpleada from "./pages/empleado/DashboardEmpleada";
 import InventarioAdmin from "./pages/admin/InventarioAdmin";
+import BoutiqueAdmin from "./pages/admin/BoutiqueAdmin";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
 
       <Route element={<RutaProtegida roles={["admin"]} />}>
         <Route element={<AppLayout />}>
+          <Route path="/admin/boutique" element={<BoutiqueAdmin />} />
           <Route path="/admin/inventario" element={<InventarioAdmin />} />
           <Route path="/admin" element={<DashboardAdmin />} />
           <Route path="/admin/citas" element={<AgendaAdmin />} />

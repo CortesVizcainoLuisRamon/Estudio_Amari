@@ -1,0 +1,22 @@
+USE estudio_amari;
+
+CREATE TABLE IF NOT EXISTS productos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(120) NOT NULL,
+  descripcion VARCHAR(500) NULL,
+  categoria VARCHAR(60) NOT NULL DEFAULT 'Accesorios',
+  precio DECIMAL(10,2) NOT NULL,
+  imagen_url VARCHAR(500) NULL,
+  tipo_variante VARCHAR(30) NOT NULL DEFAULT 'Color',
+  activo BOOLEAN NOT NULL DEFAULT TRUE,
+  creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS variantes_producto (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  producto_id INT NOT NULL,
+  nombre VARCHAR(60) NOT NULL,
+  stock INT NOT NULL DEFAULT 0,
+  activo BOOLEAN NOT NULL DEFAULT TRUE,
+  FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE
+);
