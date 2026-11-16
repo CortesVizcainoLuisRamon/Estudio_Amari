@@ -8,6 +8,26 @@ const textoFecha = (f) => `${f.getFullYear()}-${dos(f.getMonth() + 1)}-${dos(f.g
 // "2026-11-09 14:30" -> minutos desde medianoche
 const aMinutos = (t) => Number(t.slice(11, 13)) * 60 + Number(t.slice(14, 16));
 
+const alertasInventario = async () => {
+  const [rows] = await pool.query(
+    `SELECT nombre, unidad, stock, stock_minimo
+     FROM insumos
+     WHERE activo = TRUE AND stock <= stock_minimo
+     ORDER BY stock = 0 DESC, nombre`
+  );
+
+  return {
+    total: rows.length,
+    items: rows.slice(0, 5).map((r) => ({
+      nombre: r.nombre,
+      unidad: r.unidad,
+      stock: Number(r.stock),
+      stock_minimo: Number(r.stock_minimo),
+      estado: Number(r.stock) <= 0 ? "agotado" : "bajo",
+    })),
+  };
+};
+
 export const obtenerDashboard = async (req, res) => {
   try {
     const ahora = new Date();
@@ -53,6 +73,7 @@ export const obtenerDashboard = async (req, res) => {
     ]);
 
     const citasHoy = await adjuntarServicios(filasHoy);
+    const alertas = await alertasInventario();
 
     // Ocupación de hoy: minutos reservados / minutos de atención de quienes trabajan hoy
     const capacidad = CIERRE_MIN - APERTURA_MIN;
@@ -91,6 +112,7 @@ export const obtenerDashboard = async (req, res) => {
         },
         ingresos: { completadas: suma("completada"), confirmadas: suma("confirmada") },
         servicios_top: top.map((s) => ({ nombre: s.nombre, veces: Number(s.veces) })),
+        alertas_inventario: alertas,
       },
     });
   } catch (err) {
@@ -158,6 +180,7 @@ export const obtenerDashboardEmpleada = async (req, res) => {
     ]);
 
     const citasHoy = await adjuntarServicios(filasHoy);
+    const alertas = await alertasInventario();
 
     const ultimos7 = Array.from({ length: 7 }, (_, i) => {
       const dia = textoFecha(
@@ -180,6 +203,7 @@ export const obtenerDashboardEmpleada = async (req, res) => {
         clientas_mes: Number(mes[0].clientas),
         ultimos_7: ultimos7,
         servicios_top: top.map((s) => ({ nombre: s.nombre, veces: Number(s.veces) })),
+        alertas_inventario: alertas,
       },
     });
   } catch (err) {

@@ -18,7 +18,7 @@ import { ESTADOS_CITA } from "../../config/citas";
 import { fechaLarga, horaDe } from "../../utils/fechas";
 import { formatearMoneda } from "../../utils/formato";
 import Estadistica from "../../components/Estadistica";
-
+import AlertasInventario from "../../components/AlertasInventario";
 
 function DashboardAdmin() {
   const { usuario } = useAuth();
@@ -247,6 +247,8 @@ function DashboardAdmin() {
                 )}
               </div>
             </section>
+                        <AlertasInventario alertas={d.alertas_inventario} to="/admin/inventario?filtro=alertas" />
+
           </div>
         </>
       )}

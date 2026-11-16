@@ -12,6 +12,7 @@ import { getInsumos } from "../../services/inventario.service";
 import ModalInsumo from "../../components/ModalInsumo";
 import ModalMovimiento from "../../components/ModalMovimiento";
 import { ESTADOS_INSUMO, formatearCantidad } from "../../config/inventario";
+import { useSearchParams } from "react-router-dom";
 
 const chip = (activo) =>
   `rounded-full border px-4 py-1.5 text-sm font-medium transition ${
@@ -35,7 +36,8 @@ function InventarioAdmin() {
 
   const [version, setVersion] = useState(0);
   const [resultado, setResultado] = useState(null);
-  const [soloAlertas, setSoloAlertas] = useState(false);
+  const [params] = useSearchParams();
+  const [soloAlertas, setSoloAlertas] = useState(params.get("filtro") === "alertas");
   const [categoria, setCategoria] = useState(null);
   const [modalInsumo, setModalInsumo] = useState(null); // { insumo }
   const [movimiento, setMovimiento] = useState(null); // { insumo, tipo }

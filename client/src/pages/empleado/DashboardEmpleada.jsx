@@ -7,6 +7,7 @@ import DetalleCita from "../../components/DetalleCita";
 import { ESTADOS_CITA } from "../../config/citas";
 import { fechaLarga, horaDe, deTexto } from "../../utils/fechas";
 import { formatearMoneda } from "../../utils/formato";
+import AlertasInventario from "../../components/AlertasInventario";
 
 const saludo = () => {
   const h = new Date().getHours();
@@ -164,7 +165,7 @@ function DashboardEmpleada() {
               </div>
             </section>
 
-            <section className="lg:col-span-3">
+            <section className="lg:col-span-2">
               <h2 className="mb-3 font-display text-xl font-semibold text-amari-titulo">
                 Mis ingresos de los últimos 7 días
               </h2>
@@ -198,6 +199,10 @@ function DashboardEmpleada() {
                   ))}
                 </div>
               </div>
+            <AlertasInventario
+              alertas={d.alertas_inventario}
+              to="/empleado/inventario?filtro=alertas"
+            />
             </section>
           </div>
         </>
