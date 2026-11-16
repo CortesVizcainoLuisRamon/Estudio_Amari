@@ -12,6 +12,7 @@ import ServiciosAdmin from "./pages/admin/ServiciosAdmin";
 import EmpleadosAdmin from "./pages/admin/EmpleadosAdmin";
 import MisCitas from "./pages/cliente/MisCitas";
 import DashboardEmpleada from "./pages/empleado/DashboardEmpleada";
+import InventarioAdmin from "./pages/admin/InventarioAdmin";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
 
       <Route element={<RutaProtegida roles={["admin"]} />}>
         <Route element={<AppLayout />}>
+          <Route path="/admin/inventario" element={<InventarioAdmin />} />
           <Route path="/admin" element={<DashboardAdmin />} />
           <Route path="/admin/citas" element={<AgendaAdmin />} />
           <Route path="/admin/clientes" element={<ClientesAdmin />} />
@@ -33,6 +35,7 @@ function App() {
 
       <Route element={<RutaProtegida roles={["empleado"]} />}>
         <Route element={<AppLayout />}>
+          <Route path="/empleado/inventario" element={<InventarioAdmin />} />
           <Route path="/empleado" element={<DashboardEmpleada />} />
           <Route path="/empleado/citas" element={<AgendaAdmin />} />
           <Route path="/empleado/clientes" element={<ClientesAdmin />} />
