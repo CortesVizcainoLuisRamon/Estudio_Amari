@@ -235,8 +235,20 @@ export const crearCita = async (req, res) => {
       return res.status(403).json({ ok: false, mensaje: "Tu cuenta no tiene perfil de clienta" });
     }
   }
-  const empleadoId = Number(d.empleado_id);
-  const ids = normalizarIds(d.servicios_ids);
+  let empleadoId = Number(d.empleado_id);
+
+  // Una empleada solo puede agendar para sí misma
+  if (req.usuario.rol === "empleado") {
+    try {
+      empleadoId = await empleadaDeUsuario(req.usuario.id);
+    } catch (err) {
+      console.error("Error al buscar la empleada:", err.message);
+      return res.status(500).json({ ok: false, mensaje: "Error al crear la cita" });
+    }
+    if (!empleadoId) {
+      return res.status(403).json({ ok: false, mensaje: "Tu cuenta no tiene perfil de empleada" });
+    }
+  }  const ids = normalizarIds(d.servicios_ids);
   const fecha = typeof d.fecha === "string" ? d.fecha.trim() : "";
   const hora = typeof d.hora === "string" ? d.hora.trim() : "";
   const notas = typeof d.notas === "string" ? d.notas.trim() : "";
@@ -457,5 +469,34 @@ export const cancelarMiCita = async (req, res) => {
   } catch (err) {
     console.error("Error al cancelar la cita:", err.message);
     res.status(500).json({ ok: false, mensaje: "Error al cancelar la cita" });
+  }
+};
+
+export const obtenerMiPerfil = async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT e.id, e.color, u.nombre, u.apellidos
+       FROM empleados e
+       JOIN usuarios u ON u.id = e.usuario_id
+       WHERE e.usuario_id = ? AND e.activo = TRUE`,
+      [req.usuario.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ ok: false, mensaje: "Tu cuenta no tiene perfil de empleada" });
+    }
+
+    const [servicios] = await pool.query(
+      "SELECT servicio_id FROM empleado_servicio WHERE empleado_id = ?",
+      [rows[0].id]
+    );
+
+    res.json({
+      ok: true,
+      data: { ...rows[0], activo: true, servicios_ids: servicios.map((s) => s.servicio_id) },
+    });
+  } catch (err) {
+    console.error("Error al obtener el perfil de la empleada:", err.message);
+    res.status(500).json({ ok: false, mensaje: "Error al obtener tu perfil" });
   }
 };

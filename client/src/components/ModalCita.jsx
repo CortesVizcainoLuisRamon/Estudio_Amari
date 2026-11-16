@@ -5,7 +5,8 @@ import ModalCliente from "./ModalCliente";
 import { getClientes } from "../services/clientes.service";
 import { getServicios } from "../services/servicios.service";
 import { getEmpleados } from "../services/empleados.service";
-import { getDisponibilidad, crearCita } from "../services/citas.service";
+import { getDisponibilidad, crearCita, getMiPerfil } from "../services/citas.service";
+import { useAuth } from "../hooks/useAuth";
 import { aTexto, fechaLarga, horaMasMinutos } from "../utils/fechas";
 import {
   formatearDuracion,
@@ -24,6 +25,8 @@ const claseOpcion = (activa) =>
   }`;
 
 function ModalCita({ onCerrar, onGuardado }) {
+  const { usuario } = useAuth();
+  const esEmpleada = usuario.rol === "empleado";
   const [datos, setDatos] = useState(null);
   const [errorCarga, setErrorCarga] = useState(false);
   const [paso, setPaso] = useState(0);
@@ -40,12 +43,18 @@ function ModalCita({ onCerrar, onGuardado }) {
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
 
-  useEffect(() => {
+    useEffect(() => {
     let activo = true;
 
-    Promise.all([getClientes(), getServicios(), getEmpleados()])
+    Promise.all([
+      getClientes(),
+      getServicios(),
+      esEmpleada ? getMiPerfil().then((perfil) => [perfil]) : getEmpleados(),
+    ])
       .then(([clientes, servicios, empleados]) => {
-        if (activo) setDatos({ clientes, servicios, empleados });
+        if (!activo) return;
+        setDatos({ clientes, servicios, empleados });
+        if (esEmpleada) setEmpleadoId(empleados[0].id);
       })
       .catch(() => {
         if (activo) setErrorCarga(true);
@@ -54,7 +63,7 @@ function ModalCita({ onCerrar, onGuardado }) {
     return () => {
       activo = false;
     };
-  }, []);
+  }, [esEmpleada]);
 
   useEffect(() => {
     if (creandoCliente) return;

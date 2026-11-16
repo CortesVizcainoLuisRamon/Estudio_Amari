@@ -4,16 +4,14 @@ import RedirigirInicio from "./routes/RedirigirInicio";
 import AppLayout from "./layouts/AppLayout";
 import Login from "./pages/auth/Login";
 import Registro from "./pages/auth/Registro";
-import Panel from "./pages/Panel";
 import Proximamente from "./pages/Proximamente";
+import DashboardAdmin from "./pages/admin/DashboardAdmin";
 import AgendaAdmin from "./pages/admin/AgendaAdmin";
 import ClientesAdmin from "./pages/admin/ClientesAdmin";
 import ServiciosAdmin from "./pages/admin/ServiciosAdmin";
 import EmpleadosAdmin from "./pages/admin/EmpleadosAdmin";
 import MisCitas from "./pages/cliente/MisCitas";
-import DashboardAdmin from "./pages/admin/DashboardAdmin";
-
-const ROLES_SIMPLES = ["empleado"];
+import DashboardEmpleada from "./pages/empleado/DashboardEmpleada";
 
 function App() {
   return (
@@ -24,12 +22,21 @@ function App() {
 
       <Route element={<RutaProtegida roles={["admin"]} />}>
         <Route element={<AppLayout />}>
-          <Route path="/admin" element={<DashboardAdmin />} />          
+          <Route path="/admin" element={<DashboardAdmin />} />
           <Route path="/admin/citas" element={<AgendaAdmin />} />
           <Route path="/admin/clientes" element={<ClientesAdmin />} />
           <Route path="/admin/servicios" element={<ServiciosAdmin />} />
           <Route path="/admin/empleados" element={<EmpleadosAdmin />} />
           <Route path="/admin/*" element={<Proximamente />} />
+        </Route>
+      </Route>
+
+      <Route element={<RutaProtegida roles={["empleado"]} />}>
+        <Route element={<AppLayout />}>
+          <Route path="/empleado" element={<DashboardEmpleada />} />
+          <Route path="/empleado/citas" element={<AgendaAdmin />} />
+          <Route path="/empleado/clientes" element={<ClientesAdmin />} />
+          <Route path="/empleado/*" element={<Proximamente />} />
         </Route>
       </Route>
 
@@ -39,15 +46,6 @@ function App() {
           <Route path="/cliente/*" element={<Proximamente />} />
         </Route>
       </Route>
-
-      {ROLES_SIMPLES.map((rol) => (
-        <Route key={rol} element={<RutaProtegida roles={[rol]} />}>
-          <Route element={<AppLayout />}>
-            <Route path={`/${rol}`} element={<Panel />} />
-            <Route path={`/${rol}/*`} element={<Proximamente />} />
-          </Route>
-        </Route>
-      ))}
 
       <Route path="*" element={<p className="p-8 text-center">Página no encontrada</p>} />
     </Routes>

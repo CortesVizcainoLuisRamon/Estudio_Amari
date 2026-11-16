@@ -6,6 +6,7 @@ import {
   cambiarEstado,
   obtenerMisCitas,
   cancelarMiCita,
+  obtenerMiPerfil,
 } from "../controllers/citas.controller.js";
 import { verificarToken, permitirRoles } from "../middlewares/auth.middleware.js";
 
@@ -20,6 +21,9 @@ router.post("/", permitirRoles("admin", "empleado", "cliente"), crearCita);
 // Solo la clienta (sus propias citas)
 router.get("/mis-citas", permitirRoles("cliente"), obtenerMisCitas);
 router.patch("/:id/cancelar", permitirRoles("cliente"), cancelarMiCita);
+
+// Solo la empleada
+router.get("/mi-perfil", permitirRoles("empleado"), obtenerMiPerfil);
 
 // Solo personal del estudio
 router.get("/", permitirRoles("admin", "empleado"), obtenerCitas);

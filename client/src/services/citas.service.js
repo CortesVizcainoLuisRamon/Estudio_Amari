@@ -31,3 +31,8 @@ export const cancelarMiCita = async (id) => {
   const { data } = await api.patch(`/citas/${id}/cancelar`);
   return data.data;
 };
+
+export const getMiPerfil = async () => {
+  const { data } = await api.get("/citas/mi-perfil");
+  return data.data;
+};
