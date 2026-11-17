@@ -115,8 +115,8 @@ export const login = async (req, res) => {
 
 export const perfil = async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      `SELECT id, nombre, apellidos, email, telefono, rol
+        const [rows] = await pool.query(
+      `SELECT id, nombre, apellidos, email, telefono, rol, debe_cambiar_clave
        FROM usuarios WHERE id = ? AND activo = TRUE`,
       [req.usuario.id]
     );
@@ -125,7 +125,10 @@ export const perfil = async (req, res) => {
       return res.status(404).json({ ok: false, mensaje: "Usuario no encontrado" });
     }
 
-    res.json({ ok: true, usuario: rows[0] });
+    res.json({
+      ok: true,
+      usuario: { ...rows[0], debe_cambiar_clave: Boolean(rows[0].debe_cambiar_clave) },
+    });
   } catch (error) {
     console.error("Error al obtener el perfil:", error.message);
     res.status(500).json({ ok: false, mensaje: "Error al obtener el perfil" });

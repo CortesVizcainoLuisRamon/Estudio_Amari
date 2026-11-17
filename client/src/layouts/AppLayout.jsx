@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Settings, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { MENUS } from "../config/menus";
 import { rutaPorRol } from "../routes/rutaPorRol";
 import logo from "../assets/branding/logo-amari-cuadrado.png";
 import { useCarrito } from "../hooks/useCarrito";
+import { obtenerPerfil } from "../services/auth.service";
 
 const ETIQUETA_ROL = { admin: "Admin", empleado: "Empleado", cliente: "Cliente" };
 
@@ -20,10 +21,16 @@ function AppLayout() {
   const { usuario, logout } = useAuth();
   const { cantidad: enCarrito } = useCarrito();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [abierto, setAbierto] = useState(false);
+  const [perfil, setPerfil] = useState(null);
+  const [version, setVersion] = useState(0);
 
   const menu = MENUS[usuario.rol] ?? [];
-  const iniciales = `${usuario.nombre[0] ?? ""}${usuario.apellidos[0] ?? ""}`.toUpperCase();
+  const nombre = perfil?.nombre ?? usuario.nombre;
+  const apellidos = perfil?.apellidos ?? usuario.apellidos;
+  const iniciales = `${nombre[0] ?? ""}${apellidos[0] ?? ""}`.toUpperCase();
+  const rutaConfiguracion = `${rutaPorRol(usuario.rol)}/configuracion`;
 
   const cerrarMenu = () => setAbierto(false);
 
@@ -36,10 +43,28 @@ function AppLayout() {
     return () => window.removeEventListener("keydown", alPresionar);
   }, [abierto]);
 
+  // Perfil fresco desde el servidor: nombre actualizado y aviso de contraseña temporal
+  useEffect(() => {
+    let activo = true;
+    obtenerPerfil()
+      .then((p) => {
+        if (activo) setPerfil(p);
+      })
+      .catch(() => {});
+    return () => {
+      activo = false;
+    };
+  }, [version]);
+
   const salir = () => {
     logout();
     navigate("/login", { replace: true });
   };
+
+  // Con contraseña temporal, solo se puede estar en Configuración
+  if (perfil?.debe_cambiar_clave && pathname !== rutaConfiguracion) {
+    return <Navigate to={rutaConfiguracion} replace />;
+  }
 
   return (
     <div className="flex min-h-screen bg-amari-bg">
@@ -80,14 +105,14 @@ function AppLayout() {
           </span>
           <div className="min-w-0 leading-tight">
             <p className="truncate text-sm font-semibold text-amari-titulo">
-              {usuario.nombre} {usuario.apellidos}
+              {nombre} {apellidos}
             </p>
             <p className="text-xs text-amari-acento">{ETIQUETA_ROL[usuario.rol]}</p>
           </div>
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3">
-                    {menu.map(({ to, texto, icono: Icono, end, insignia }) => (
+          {menu.map(({ to, texto, icono: Icono, end, insignia }) => (
             <NavLink key={to} to={to} end={end} onClick={cerrarMenu} className={claseEnlace}>
               <Icono size={18} />
               {texto}
@@ -101,11 +126,7 @@ function AppLayout() {
         </nav>
 
         <div className="space-y-1 border-t border-amari-borde p-3">
-          <NavLink
-            to={`${rutaPorRol(usuario.rol)}/configuracion`}
-            onClick={cerrarMenu}
-            className={claseEnlace}
-          >
+          <NavLink to={rutaConfiguracion} onClick={cerrarMenu} className={claseEnlace}>
             <Settings size={18} />
             Configuración
           </NavLink>
@@ -135,7 +156,12 @@ function AppLayout() {
         </header>
 
         <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
-          <Outlet />
+          <Outlet
+            context={{
+              recargarPerfil: () => setVersion((v) => v + 1),
+              debeCambiarClave: Boolean(perfil?.debe_cambiar_clave),
+            }}
+          />
         </main>
       </div>
     </div>

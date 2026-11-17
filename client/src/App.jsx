@@ -13,14 +13,15 @@ import EmpleadosAdmin from "./pages/admin/EmpleadosAdmin";
 import InventarioAdmin from "./pages/admin/InventarioAdmin";
 import BoutiqueAdmin from "./pages/admin/BoutiqueAdmin";
 import PedidosAdmin from "./pages/admin/PedidosAdmin";
+import VentasAdmin from "./pages/admin/VentasAdmin";
+import NotificacionesAdmin from "./pages/admin/NotificacionesAdmin";
 import DashboardEmpleada from "./pages/empleado/DashboardEmpleada";
 import MisCitas from "./pages/cliente/MisCitas";
 import BoutiqueCliente from "./pages/cliente/BoutiqueCliente";
 import CarritoCliente from "./pages/cliente/CarritoCliente";
 import MisPedidos from "./pages/cliente/MisPedidos";
-import VentasAdmin from "./pages/admin/VentasAdmin";
-import NotificacionesAdmin from "./pages/admin/NotificacionesAdmin";
 import MisNotificaciones from "./pages/cliente/MisNotificaciones";
+import Configuracion from "./pages/Configuracion";
 
 function App() {
   return (
@@ -31,9 +32,6 @@ function App() {
 
       <Route element={<RutaProtegida roles={["admin"]} />}>
         <Route element={<AppLayout />}>
-          <Route path="/cliente/notificaciones" element={<MisNotificaciones />} />
-          <Route path="/admin/notificaciones" element={<NotificacionesAdmin />} />
-          <Route path="/admin/ventas" element={<VentasAdmin />} />
           <Route path="/admin" element={<DashboardAdmin />} />
           <Route path="/admin/citas" element={<AgendaAdmin />} />
           <Route path="/admin/clientes" element={<ClientesAdmin />} />
@@ -42,6 +40,9 @@ function App() {
           <Route path="/admin/inventario" element={<InventarioAdmin />} />
           <Route path="/admin/boutique" element={<BoutiqueAdmin />} />
           <Route path="/admin/pedidos" element={<PedidosAdmin />} />
+          <Route path="/admin/ventas" element={<VentasAdmin />} />
+          <Route path="/admin/notificaciones" element={<NotificacionesAdmin />} />
+          <Route path="/admin/configuracion" element={<Configuracion />} />
           <Route path="/admin/*" element={<Proximamente />} />
         </Route>
       </Route>
@@ -52,6 +53,7 @@ function App() {
           <Route path="/empleado/citas" element={<AgendaAdmin />} />
           <Route path="/empleado/clientes" element={<ClientesAdmin />} />
           <Route path="/empleado/inventario" element={<InventarioAdmin />} />
+          <Route path="/empleado/configuracion" element={<Configuracion />} />
           <Route path="/empleado/*" element={<Proximamente />} />
         </Route>
       </Route>
@@ -62,6 +64,8 @@ function App() {
           <Route path="/cliente/boutique" element={<BoutiqueCliente />} />
           <Route path="/cliente/carrito" element={<CarritoCliente />} />
           <Route path="/cliente/pedidos" element={<MisPedidos />} />
+          <Route path="/cliente/notificaciones" element={<MisNotificaciones />} />
+          <Route path="/cliente/configuracion" element={<Configuracion />} />
           <Route path="/cliente/*" element={<Proximamente />} />
         </Route>
       </Route>
