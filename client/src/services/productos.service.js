@@ -14,3 +14,8 @@ export const actualizarProducto = async (id, datos) => {
   const { data } = await api.put(`/productos/${id}`, datos);
   return data.data;
 };
+
+export const getCatalogo = async () => {
+  const { data } = await api.get("/productos");
+  return data.data;
+};

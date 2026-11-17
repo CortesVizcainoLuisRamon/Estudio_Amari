@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { MENUS } from "../config/menus";
 import { rutaPorRol } from "../routes/rutaPorRol";
 import logo from "../assets/branding/logo-amari-cuadrado.png";
+import { useCarrito } from "../hooks/useCarrito";
 
 const ETIQUETA_ROL = { admin: "Admin", empleado: "Empleado", cliente: "Cliente" };
 
@@ -17,6 +18,7 @@ const claseEnlace = ({ isActive }) =>
 
 function AppLayout() {
   const { usuario, logout } = useAuth();
+  const { cantidad: enCarrito } = useCarrito();
   const navigate = useNavigate();
   const [abierto, setAbierto] = useState(false);
 
@@ -85,10 +87,15 @@ function AppLayout() {
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3">
-          {menu.map(({ to, texto, icono: Icono, end }) => (
+                    {menu.map(({ to, texto, icono: Icono, end, insignia }) => (
             <NavLink key={to} to={to} end={end} onClick={cerrarMenu} className={claseEnlace}>
               <Icono size={18} />
               {texto}
+              {insignia === "carrito" && enCarrito > 0 && (
+                <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-amari-primario ring-1 ring-amari-primario/30">
+                  {enCarrito}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>

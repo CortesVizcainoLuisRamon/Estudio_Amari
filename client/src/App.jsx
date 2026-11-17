@@ -10,10 +10,14 @@ import AgendaAdmin from "./pages/admin/AgendaAdmin";
 import ClientesAdmin from "./pages/admin/ClientesAdmin";
 import ServiciosAdmin from "./pages/admin/ServiciosAdmin";
 import EmpleadosAdmin from "./pages/admin/EmpleadosAdmin";
-import MisCitas from "./pages/cliente/MisCitas";
-import DashboardEmpleada from "./pages/empleado/DashboardEmpleada";
 import InventarioAdmin from "./pages/admin/InventarioAdmin";
 import BoutiqueAdmin from "./pages/admin/BoutiqueAdmin";
+import PedidosAdmin from "./pages/admin/PedidosAdmin";
+import DashboardEmpleada from "./pages/empleado/DashboardEmpleada";
+import MisCitas from "./pages/cliente/MisCitas";
+import BoutiqueCliente from "./pages/cliente/BoutiqueCliente";
+import CarritoCliente from "./pages/cliente/CarritoCliente";
+import MisPedidos from "./pages/cliente/MisPedidos";
 
 function App() {
   return (
@@ -24,23 +28,24 @@ function App() {
 
       <Route element={<RutaProtegida roles={["admin"]} />}>
         <Route element={<AppLayout />}>
-          <Route path="/admin/boutique" element={<BoutiqueAdmin />} />
-          <Route path="/admin/inventario" element={<InventarioAdmin />} />
           <Route path="/admin" element={<DashboardAdmin />} />
           <Route path="/admin/citas" element={<AgendaAdmin />} />
           <Route path="/admin/clientes" element={<ClientesAdmin />} />
           <Route path="/admin/servicios" element={<ServiciosAdmin />} />
           <Route path="/admin/empleados" element={<EmpleadosAdmin />} />
+          <Route path="/admin/inventario" element={<InventarioAdmin />} />
+          <Route path="/admin/boutique" element={<BoutiqueAdmin />} />
+          <Route path="/admin/pedidos" element={<PedidosAdmin />} />
           <Route path="/admin/*" element={<Proximamente />} />
         </Route>
       </Route>
 
       <Route element={<RutaProtegida roles={["empleado"]} />}>
         <Route element={<AppLayout />}>
-          <Route path="/empleado/inventario" element={<InventarioAdmin />} />
           <Route path="/empleado" element={<DashboardEmpleada />} />
           <Route path="/empleado/citas" element={<AgendaAdmin />} />
           <Route path="/empleado/clientes" element={<ClientesAdmin />} />
+          <Route path="/empleado/inventario" element={<InventarioAdmin />} />
           <Route path="/empleado/*" element={<Proximamente />} />
         </Route>
       </Route>
@@ -48,6 +53,9 @@ function App() {
       <Route element={<RutaProtegida roles={["cliente"]} />}>
         <Route element={<AppLayout />}>
           <Route path="/cliente" element={<MisCitas />} />
+          <Route path="/cliente/boutique" element={<BoutiqueCliente />} />
+          <Route path="/cliente/carrito" element={<CarritoCliente />} />
+          <Route path="/cliente/pedidos" element={<MisPedidos />} />
           <Route path="/cliente/*" element={<Proximamente />} />
         </Route>
       </Route>

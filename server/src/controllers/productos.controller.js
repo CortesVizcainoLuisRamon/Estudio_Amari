@@ -216,3 +216,13 @@ export const actualizarProducto = async (req, res) => {
     conexion.release();
   }
 };
+
+export const obtenerCatalogo = async (req, res) => {
+  try {
+    const data = await cargarProductos(pool, "WHERE activo = TRUE");
+    res.json({ ok: true, total: data.length, data });
+  } catch (err) {
+    console.error("Error al obtener el catálogo:", err.message);
+    res.status(500).json({ ok: false, mensaje: "Error al obtener el catálogo" });
+  }
+};
