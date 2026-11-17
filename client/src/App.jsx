@@ -18,6 +18,7 @@ import MisCitas from "./pages/cliente/MisCitas";
 import BoutiqueCliente from "./pages/cliente/BoutiqueCliente";
 import CarritoCliente from "./pages/cliente/CarritoCliente";
 import MisPedidos from "./pages/cliente/MisPedidos";
+import VentasAdmin from "./pages/admin/VentasAdmin";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
 
       <Route element={<RutaProtegida roles={["admin"]} />}>
         <Route element={<AppLayout />}>
+          <Route path="/admin/ventas" element={<VentasAdmin />} />
           <Route path="/admin" element={<DashboardAdmin />} />
           <Route path="/admin/citas" element={<AgendaAdmin />} />
           <Route path="/admin/clientes" element={<ClientesAdmin />} />

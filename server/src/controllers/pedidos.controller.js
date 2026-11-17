@@ -184,8 +184,10 @@ const moverPedido = async ({ id, nuevo, clienteId = null, soloDesde = null }) =>
       throw new ErrorPedido(400, `No se puede cambiar un pedido ${actual} a ${nuevo}`);
     }
 
-    await conexion.query("UPDATE pedidos SET estado = ? WHERE id = ?", [nuevo, id]);
-
+    await conexion.query(
+      "UPDATE pedidos SET estado = ?, entregado_en = IF(? = 'entregado', NOW(), entregado_en) WHERE id = ?",
+      [nuevo, nuevo, id]
+    );
     if (nuevo === "cancelado") {
       await conexion.query(
         `UPDATE variantes_producto v

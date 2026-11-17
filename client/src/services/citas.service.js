@@ -56,3 +56,8 @@ export const quitarFidelidad = async (citaId) => {
   const { data } = await api.delete(`/citas/${citaId}/fidelidad`);
   return data.data;
 };
+
+export const getFidelidadTodos = async () => {
+  const { data } = await api.get("/citas/fidelidad");
+  return data.data;
+};

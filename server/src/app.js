@@ -11,6 +11,7 @@ import dashboardRoutes from "./routes/dashboard.routes.js";
 import inventarioRoutes from "./routes/inventario.routes.js";
 import productosRoutes from "./routes/productos.routes.js";
 import pedidosRoutes from "./routes/pedidos.routes.js";
+import ventasRoutes from "./routes/ventas.routes.js";
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/inventario", inventarioRoutes);
 app.use("/api/productos", productosRoutes);
 app.use("/api/pedidos", pedidosRoutes);
+app.use("/api/ventas", ventasRoutes);
 
 const PORT = process.env.PORT || 3000;
 

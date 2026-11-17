@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Search, Star, Sprout } from "lucide-react";
+import { Plus, Pencil, Search, Star, Sprout, Gift } from "lucide-react";
 import { getClientes } from "../../services/clientes.service";
+import { getFidelidadTodos } from "../../services/citas.service";
 import ModalCliente from "../../components/ModalCliente";
 
 // Regla provisional: desde 3 visitas completadas, la clienta es "Regular"
 const VISITAS_REGULAR = 3;
+// Tarjeta de fidelidad: 5 visitas y el sexto servicio es gratis
+const VISITAS_PREMIO = 5;
 
 const normalizar = (t) =>
   (t ?? "").toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
 function ClientesAdmin() {
   const [clientes, setClientes] = useState([]);
+  const [fidelidad, setFidelidad] = useState({});
   const [busqueda, setBusqueda] = useState("");
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
@@ -20,10 +24,12 @@ function ClientesAdmin() {
   useEffect(() => {
     let activo = true;
 
-    getClientes()
-      .then((datos) => {
+    // Si la fidelidad falla, la lista se muestra igual (sin sellos)
+    Promise.all([getClientes(), getFidelidadTodos().catch(() => [])])
+      .then(([datos, sellos]) => {
         if (!activo) return;
         setClientes(datos);
+        setFidelidad(Object.fromEntries(sellos.map((f) => [f.cliente_id, f])));
         setError("");
       })
       .catch(() => {
@@ -96,6 +102,8 @@ function ClientesAdmin() {
           {visibles.map((c) => {
             const regular = c.visitas >= VISITAS_REGULAR;
             const NivelIcono = regular ? Star : Sprout;
+            const sellos = fidelidad[c.id]?.sellos ?? 0;
+            const premio = fidelidad[c.id]?.premio ?? false;
 
             return (
               <article
@@ -126,6 +134,15 @@ function ClientesAdmin() {
                   <p className="text-xs text-amari-acento">
                     {c.visitas} {c.visitas === 1 ? "visita" : "visitas"}
                   </p>
+                  {premio ? (
+                    <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                      <Gift size={12} /> Premio disponible
+                    </p>
+                  ) : (
+                    <p className="text-[11px] text-amari-acento">
+                      {sellos}/{VISITAS_PREMIO} sellos
+                    </p>
+                  )}
                 </div>
 
                 <button
