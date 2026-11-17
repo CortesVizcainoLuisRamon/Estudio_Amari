@@ -19,6 +19,8 @@ import BoutiqueCliente from "./pages/cliente/BoutiqueCliente";
 import CarritoCliente from "./pages/cliente/CarritoCliente";
 import MisPedidos from "./pages/cliente/MisPedidos";
 import VentasAdmin from "./pages/admin/VentasAdmin";
+import NotificacionesAdmin from "./pages/admin/NotificacionesAdmin";
+import MisNotificaciones from "./pages/cliente/MisNotificaciones";
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
 
       <Route element={<RutaProtegida roles={["admin"]} />}>
         <Route element={<AppLayout />}>
+          <Route path="/cliente/notificaciones" element={<MisNotificaciones />} />
+          <Route path="/admin/notificaciones" element={<NotificacionesAdmin />} />
           <Route path="/admin/ventas" element={<VentasAdmin />} />
           <Route path="/admin" element={<DashboardAdmin />} />
           <Route path="/admin/citas" element={<AgendaAdmin />} />
