@@ -6,6 +6,7 @@ const FECHA_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const HORA_REGEX = /^\d{2}:\d{2}$/;
 const MAX_CITAS_ACTIVAS = 3;
 const MIN_HORAS_CANCELAR = 12;
+const VISITAS_PREMIO = 5;
 
 class ErrorCita extends Error {
   constructor(status, mensaje) {
@@ -65,6 +66,7 @@ const clienteDeUsuario = async (usuarioId) => {
 
 export const SELECT_CITAS = `
   SELECT c.id, c.cliente_id, c.empleado_id, c.estado, c.total, c.notas,
+         c.descuento, c.canje_fidelidad,
          DATE_FORMAT(c.inicio, '%Y-%m-%d %H:%i') AS inicio,
          DATE_FORMAT(c.fin, '%Y-%m-%d %H:%i') AS fin,
          TRIM(CONCAT(cl.nombre, ' ', COALESCE(cl.apellidos, ''))) AS cliente,
@@ -90,6 +92,8 @@ export const adjuntarServicios = async (citas) => {
   return citas.map((c) => ({
     ...c,
     total: Number(c.total),
+    descuento: Number(c.descuento),
+    canje_fidelidad: Boolean(c.canje_fidelidad),
     servicios: rel
       .filter((r) => r.cita_id === c.id)
       .map((r) => ({
@@ -395,9 +399,12 @@ export const cambiarEstado = async (req, res) => {
       params.push(empleadoId ?? 0);
     }
 
-    const [existe] = await pool.query(`SELECT id FROM citas WHERE id = ?${filtro}`, params);
+        const [existe] = await pool.query(`SELECT id, estado FROM citas WHERE id = ?${filtro}`, params);
     if (existe.length === 0) {
       return res.status(404).json({ ok: false, mensaje: "Cita no encontrada" });
+    }
+    if (existe[0].estado === "completada") {
+      return res.status(400).json({ ok: false, mensaje: "Una cita completada ya no se puede modificar" });
     }
 
     await pool.query("UPDATE citas SET estado = ? WHERE id = ?", [estado, req.params.id]);
@@ -498,5 +505,218 @@ export const obtenerMiPerfil = async (req, res) => {
   } catch (err) {
     console.error("Error al obtener el perfil de la empleada:", err.message);
     res.status(500).json({ ok: false, mensaje: "Error al obtener tu perfil" });
+  }
+};
+
+// ---------- Fidelidad: 5 visitas completadas = 6º servicio gratis ----------
+
+const calcularFidelidad = async (conexion, clienteId) => {
+  const [filas] = await conexion.query(
+    `SELECT COALESCE(SUM(canje_fidelidad = FALSE), 0) AS normales,
+            COALESCE(SUM(canje_fidelidad = TRUE), 0) AS canjes
+     FROM citas WHERE cliente_id = ? AND estado = 'completada'`,
+    [clienteId]
+  );
+
+  const sellos = Math.max(
+    0,
+    Math.min(VISITAS_PREMIO, Number(filas[0].normales) - VISITAS_PREMIO * Number(filas[0].canjes))
+  );
+
+  const [reservada] = await conexion.query(
+    `SELECT id FROM citas
+     WHERE cliente_id = ? AND canje_fidelidad = TRUE AND estado IN ('pendiente', 'confirmada')
+     LIMIT 1`,
+    [clienteId]
+  );
+
+  return {
+    sellos,
+    requeridas: VISITAS_PREMIO,
+    premio_disponible: sellos >= VISITAS_PREMIO && reservada.length === 0,
+    premio_reservado: reservada.length > 0,
+  };
+};
+
+export const obtenerMiFidelidad = async (req, res) => {
+  try {
+    const clienteId = await clienteDeUsuario(req.usuario.id);
+
+    const [servicios] = await pool.query(
+      "SELECT nombre FROM servicios WHERE aplica_fidelidad = TRUE AND activo = TRUE ORDER BY nombre"
+    );
+
+    const fidelidad = clienteId
+      ? await calcularFidelidad(pool, clienteId)
+      : { sellos: 0, requeridas: VISITAS_PREMIO, premio_disponible: false, premio_reservado: false };
+
+    res.json({ ok: true, data: { ...fidelidad, servicios_premio: servicios.map((s) => s.nombre) } });
+  } catch (err) {
+    console.error("Error al obtener la fidelidad:", err.message);
+    res.status(500).json({ ok: false, mensaje: "Error al obtener tu tarjeta de fidelidad" });
+  }
+};
+
+export const obtenerFidelidadCliente = async (req, res) => {
+  const clienteId = Number(req.params.clienteId);
+
+  if (!Number.isInteger(clienteId) || clienteId < 1) {
+    return res.status(400).json({ ok: false, mensaje: "Cliente no válido" });
+  }
+
+  try {
+    const data = await calcularFidelidad(pool, clienteId);
+    res.json({ ok: true, data });
+  } catch (err) {
+    console.error("Error al obtener la fidelidad del cliente:", err.message);
+    res.status(500).json({ ok: false, mensaje: "Error al obtener la fidelidad" });
+  }
+};
+
+export const obtenerFidelidadTodos = async (req, res) => {
+  try {
+    const [filas] = await pool.query(
+      `SELECT cliente_id,
+              SUM(canje_fidelidad = FALSE) AS normales,
+              SUM(canje_fidelidad = TRUE) AS canjes
+       FROM citas WHERE estado = 'completada'
+       GROUP BY cliente_id`
+    );
+
+    const data = filas.map((f) => {
+      const sellos = Math.max(
+        0,
+        Math.min(VISITAS_PREMIO, Number(f.normales) - VISITAS_PREMIO * Number(f.canjes))
+      );
+      return { cliente_id: f.cliente_id, sellos, premio: sellos >= VISITAS_PREMIO };
+    });
+
+    res.json({ ok: true, requeridas: VISITAS_PREMIO, data });
+  } catch (err) {
+    console.error("Error al obtener la fidelidad:", err.message);
+    res.status(500).json({ ok: false, mensaje: "Error al obtener la fidelidad" });
+  }
+};
+
+const cargarCitaConFidelidad = async (conexion, id, req) => {
+  const params = [id];
+  let filtro = "";
+
+  if (req.usuario.rol === "empleado") {
+    const empleadoId = await empleadaDeUsuario(req.usuario.id);
+    filtro = " AND empleado_id = ?";
+    params.push(empleadoId ?? 0);
+  }
+
+  const [citas] = await conexion.query(
+    `SELECT id, cliente_id, estado, canje_fidelidad, total, descuento
+     FROM citas WHERE id = ?${filtro} FOR UPDATE`,
+    params
+  );
+  if (citas.length === 0) throw new ErrorCita(404, "Cita no encontrada");
+
+  if (!["pendiente", "confirmada"].includes(citas[0].estado)) {
+    throw new ErrorCita(400, "El premio solo se puede aplicar o quitar en citas pendientes o confirmadas");
+  }
+
+  return citas[0];
+};
+
+export const aplicarFidelidad = async (req, res) => {
+  const conexion = await pool.getConnection();
+
+  try {
+    await conexion.beginTransaction();
+
+    const cita = await cargarCitaConFidelidad(conexion, req.params.id, req);
+    if (cita.canje_fidelidad) throw new ErrorCita(400, "Esta cita ya tiene el premio aplicado");
+
+    // Se bloquea a la clienta para que dos citas no usen el mismo premio a la vez
+    await conexion.query("SELECT id FROM clientes WHERE id = ? FOR UPDATE", [cita.cliente_id]);
+
+    const fidelidad = await calcularFidelidad(conexion, cita.cliente_id);
+    if (fidelidad.sellos < VISITAS_PREMIO) {
+      throw new ErrorCita(400, `Aún faltan ${VISITAS_PREMIO - fidelidad.sellos} visita(s) para el premio`);
+    }
+    if (fidelidad.premio_reservado) {
+      throw new ErrorCita(409, "Esta clienta ya tiene el premio aplicado en otra cita");
+    }
+
+    const [elegibles] = await conexion.query(
+      `SELECT cs.precio
+       FROM cita_servicios cs
+       JOIN servicios s ON s.id = cs.servicio_id
+       WHERE cs.cita_id = ? AND s.aplica_fidelidad = TRUE
+       ORDER BY cs.precio DESC
+       LIMIT 1`,
+      [cita.id]
+    );
+    if (elegibles.length === 0) {
+      throw new ErrorCita(400, "La cita no incluye ningún servicio del premio (Peinado, Corte, Manicure o Gelish)");
+    }
+
+    const descuento = Number(elegibles[0].precio ?? 0);
+    if (!(descuento > 0)) {
+      throw new ErrorCita(400, "El servicio del premio no tiene un precio registrado");
+    }
+
+    await conexion.query(
+      `UPDATE citas
+       SET canje_fidelidad = TRUE, descuento = ?, total = GREATEST(total - ?, 0)
+       WHERE id = ?`,
+      [descuento, descuento, cita.id]
+    );
+
+    await conexion.commit();
+
+    const [rows] = await pool.query(`${SELECT_CITAS} WHERE c.id = ?`, [cita.id]);
+    const [actualizada] = await adjuntarServicios(rows);
+    res.json({ ok: true, data: actualizada });
+  } catch (err) {
+    await conexion.rollback();
+
+    if (err instanceof ErrorCita) {
+      return res.status(err.status).json({ ok: false, mensaje: err.message });
+    }
+
+    console.error("Error al aplicar el premio:", err.message);
+    res.status(500).json({ ok: false, mensaje: "Error al aplicar el premio" });
+  } finally {
+    conexion.release();
+  }
+};
+
+export const quitarFidelidad = async (req, res) => {
+  const conexion = await pool.getConnection();
+
+  try {
+    await conexion.beginTransaction();
+
+    const cita = await cargarCitaConFidelidad(conexion, req.params.id, req);
+    if (!cita.canje_fidelidad) throw new ErrorCita(400, "Esta cita no tiene un premio aplicado");
+
+    await conexion.query(
+      `UPDATE citas
+       SET canje_fidelidad = FALSE, total = total + descuento, descuento = 0
+       WHERE id = ?`,
+      [cita.id]
+    );
+
+    await conexion.commit();
+
+    const [rows] = await pool.query(`${SELECT_CITAS} WHERE c.id = ?`, [cita.id]);
+    const [actualizada] = await adjuntarServicios(rows);
+    res.json({ ok: true, data: actualizada });
+  } catch (err) {
+    await conexion.rollback();
+
+    if (err instanceof ErrorCita) {
+      return res.status(err.status).json({ ok: false, mensaje: err.message });
+    }
+
+    console.error("Error al quitar el premio:", err.message);
+    res.status(500).json({ ok: false, mensaje: "Error al quitar el premio" });
+  } finally {
+    conexion.release();
   }
 };

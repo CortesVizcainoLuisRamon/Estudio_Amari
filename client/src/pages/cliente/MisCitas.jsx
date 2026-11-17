@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Plus, CalendarHeart } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-import { getMisCitas, cancelarMiCita } from "../../services/citas.service";
-import ModalCitaCliente from "../../components/ModalCitaCliente";
+import { getMisCitas, cancelarMiCita, getMiFidelidad } from "../../services/citas.service";
+import TarjetaFidelidad from "../../components/TarjetaFidelidad";import ModalCitaCliente from "../../components/ModalCitaCliente";
 import { ESTADOS_CITA } from "../../config/citas";
 import { aTexto, fechaLarga, horaDe } from "../../utils/fechas";
 import { formatearMoneda, etiquetaPrecio } from "../../utils/formato";
@@ -62,7 +62,12 @@ function TarjetaCita({ cita, puedeCancelar, onCambio }) {
           </li>
         ))}
       </ul>
-
+      
+            {cita.descuento > 0 && (
+        <p className="mt-2 text-xs font-semibold text-green-700">
+          Premio de fidelidad aplicado: −{formatearMoneda(cita.descuento)}
+        </p>
+      )}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-amari-borde pt-3">
         <p className="font-display text-base font-semibold">
           Total estimado: {formatearMoneda(cita.total)}
@@ -113,6 +118,7 @@ function MisCitas() {
   const [modal, setModal] = useState(false);
   const [aviso, setAviso] = useState("");
   const [ahora] = useState(textoAhora);
+  const [fidelidad, setFidelidad] = useState(null);
 
   const clave = String(version);
 
@@ -126,6 +132,20 @@ function MisCitas() {
       .catch(() => {
         if (activo) setResultado({ clave, error: true });
       });
+
+    return () => {
+      activo = false;
+    };
+  }, [clave]);
+  
+  useEffect(() => {
+    let activo = true;
+
+    getMiFidelidad()
+      .then((data) => {
+        if (activo) setFidelidad(data);
+      })
+      .catch(() => {});
 
     return () => {
       activo = false;
@@ -169,6 +189,7 @@ function MisCitas() {
         <p className="mb-4 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">{aviso}</p>
       )}
 
+      {fidelidad && <TarjetaFidelidad fidelidad={fidelidad} />}
       {cargando && <p className="text-center text-amari-primario">Cargando tus citas...</p>}
       {error && <p className="text-center text-red-600">No se pudieron cargar tus citas.</p>}
 

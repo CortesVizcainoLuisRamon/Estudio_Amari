@@ -36,3 +36,23 @@ export const getMiPerfil = async () => {
   const { data } = await api.get("/citas/mi-perfil");
   return data.data;
 };
+
+export const getMiFidelidad = async () => {
+  const { data } = await api.get("/citas/mi-fidelidad");
+  return data.data;
+};
+
+export const getFidelidadCliente = async (clienteId) => {
+  const { data } = await api.get(`/citas/fidelidad/${clienteId}`);
+  return data.data;
+};
+
+export const aplicarFidelidad = async (citaId) => {
+  const { data } = await api.post(`/citas/${citaId}/fidelidad`);
+  return data.data;
+};
+
+export const quitarFidelidad = async (citaId) => {
+  const { data } = await api.delete(`/citas/${citaId}/fidelidad`);
+  return data.data;
+};

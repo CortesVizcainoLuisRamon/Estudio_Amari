@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
-import { X, Flower2 } from "lucide-react";
-import { cambiarEstado } from "../services/citas.service";
+import { X, Flower2, Gift } from "lucide-react";
+import {
+  cambiarEstado,
+  getFidelidadCliente,
+  aplicarFidelidad,
+  quitarFidelidad,
+} from "../services/citas.service";
 import { ESTADOS_CITA, ACCIONES_CITA } from "../config/citas";
 import { fechaLarga, horaDe } from "../utils/fechas";
 import { formatearDuracion, formatearMoneda, etiquetaPrecio } from "../utils/formato";
@@ -8,6 +13,9 @@ import { formatearDuracion, formatearMoneda, etiquetaPrecio } from "../utils/for
 function DetalleCita({ cita, onCerrar, onCambio }) {
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const [fid, setFid] = useState(null);
+
+  const verFidelidad = cita.estado === "pendiente" || cita.estado === "confirmada";
 
   useEffect(() => {
     const alPresionar = (e) => {
@@ -17,18 +25,33 @@ function DetalleCita({ cita, onCerrar, onCambio }) {
     return () => window.removeEventListener("keydown", alPresionar);
   }, [onCerrar]);
 
+  useEffect(() => {
+    if (!verFidelidad) return;
+    let activo = true;
+
+    getFidelidadCliente(cita.cliente_id)
+      .then((data) => {
+        if (activo) setFid(data);
+      })
+      .catch(() => {});
+
+    return () => {
+      activo = false;
+    };
+  }, [verFidelidad, cita.cliente_id]);
+
   const estado = ESTADOS_CITA[cita.estado];
   const acciones = ACCIONES_CITA.filter((a) => a.desde.includes(cita.estado));
 
-  const cambiar = async (nuevoEstado) => {
+  const ejecutar = async (accion) => {
     setError("");
     setEnviando(true);
 
     try {
-      await cambiarEstado(cita.id, nuevoEstado);
+      await accion();
       onCambio();
     } catch (err) {
-      setError(err.response?.data?.mensaje || "No se pudo actualizar la cita");
+      setError(err.response?.data?.mensaje || "No se pudo completar la acción");
       setEnviando(false);
     }
   };
@@ -96,10 +119,65 @@ function DetalleCita({ cita, onCerrar, onCambio }) {
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-right font-display text-lg font-semibold">
+
+            {cita.descuento > 0 && (
+              <p className="mt-2 text-right text-xs font-semibold text-green-700">
+                Premio de fidelidad: −{formatearMoneda(cita.descuento)}
+              </p>
+            )}
+            <p className="mt-1 text-right font-display text-lg font-semibold">
               Total estimado: {formatearMoneda(cita.total)}
             </p>
           </div>
+
+          {verFidelidad && fid && (
+            <div className="rounded-xl border border-amari-borde bg-amari-bg-soft p-3">
+              <p className="flex items-center gap-2 font-semibold">
+                <Gift size={16} className="text-amari-primario" />
+                Fidelidad: {fid.sellos}/{fid.requeridas} visitas
+              </p>
+
+              {cita.canje_fidelidad ? (
+                <>
+                  <p className="mt-1 text-xs text-green-700">
+                    Premio aplicado en esta cita (servicio gratis).
+                  </p>
+                  <button
+                    type="button"
+                    disabled={enviando}
+                    onClick={() => ejecutar(() => quitarFidelidad(cita.id))}
+                    className="mt-2 rounded-full border border-red-200 px-4 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60"
+                  >
+                    Quitar premio
+                  </button>
+                </>
+              ) : fid.premio_disponible ? (
+                <>
+                  <p className="mt-1 text-xs text-amari-texto">
+                    Ya completó sus {fid.requeridas} visitas. Le corresponde un servicio gratis
+                    (Peinado, Corte, Manicure o Gelish).
+                  </p>
+                  <button
+                    type="button"
+                    disabled={enviando}
+                    onClick={() => ejecutar(() => aplicarFidelidad(cita.id))}
+                    className="btn-primario mt-2"
+                  >
+                    Aplicar premio
+                  </button>
+                </>
+              ) : fid.premio_reservado ? (
+                <p className="mt-1 text-xs text-amari-acento">
+                  Su premio ya está aplicado en otra cita.
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-amari-acento">
+                  Le {fid.requeridas - fid.sellos === 1 ? "falta" : "faltan"}{" "}
+                  {fid.requeridas - fid.sellos} visita(s) para su servicio gratis.
+                </p>
+              )}
+            </div>
+          )}
 
           {cita.notas && (
             <p>
@@ -117,7 +195,7 @@ function DetalleCita({ cita, onCerrar, onCambio }) {
                   key={a.estado}
                   type="button"
                   disabled={enviando}
-                  onClick={() => cambiar(a.estado)}
+                  onClick={() => ejecutar(() => cambiarEstado(cita.id, a.estado))}
                   className={a.clase}
                 >
                   {a.texto}
