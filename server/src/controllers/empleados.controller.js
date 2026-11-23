@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { pool } from "../config/db.js";
+import { generarClaveTemporal } from "../utils/claves.js";
 
 const COLORES = ["#e879f9", "#38bdf8", "#fb923c", "#4ade80", "#a78bfa", "#f87171", "#fbbf24"];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -30,7 +31,7 @@ const armarEmpleados = async (where = "", params = []) => {
   }));
 };
 
-const validarEmpleado = (body, esNuevo) => {
+const validarEmpleado = (body) => {
   const d = body ?? {};
   const texto = (v) => (typeof v === "string" ? v.trim() : "");
 
@@ -39,7 +40,6 @@ const validarEmpleado = (body, esNuevo) => {
   const email = texto(d.email).toLowerCase();
   const telefono = texto(d.telefono);
   const puesto = texto(d.puesto);
-  const password = typeof d.password === "string" ? d.password : "";
   const comision = d.comision_pct === "" || d.comision_pct == null ? 0 : Number(d.comision_pct);
   const dias = Array.isArray(d.dias_laborales) ? [...new Set(d.dias_laborales.map(Number))] : [];
   const servicios = Array.isArray(d.servicios_ids) ? [...new Set(d.servicios_ids.map(Number))] : [];
@@ -56,13 +56,6 @@ const validarEmpleado = (body, esNuevo) => {
   }
   if (!servicios.every((n) => Number.isInteger(n) && n > 0)) return { error: "Los servicios no son válidos" };
 
-  if (esNuevo && (password.length < 8 || password.length > 72)) {
-    return { error: "La contraseña debe tener entre 8 y 72 caracteres" };
-  }
-  if (!esNuevo && password && (password.length < 8 || password.length > 72)) {
-    return { error: "La contraseña debe tener entre 8 y 72 caracteres" };
-  }
-
   return {
     datos: {
       nombre,
@@ -70,7 +63,6 @@ const validarEmpleado = (body, esNuevo) => {
       email,
       telefono: telefono || null,
       puesto: puesto || null,
-      password,
       comision_pct: comision,
       color: d.color,
       dias_laborales: dias.sort((a, b) => a - b).join(","),
@@ -109,7 +101,7 @@ export const obtenerEmpleados = async (req, res) => {
 };
 
 export const crearEmpleado = async (req, res) => {
-  const { error, datos } = validarEmpleado(req.body, true);
+  const { error, datos } = validarEmpleado(req.body);
   if (error) return res.status(400).json({ ok: false, mensaje: error });
 
   const conexion = await pool.getConnection();
@@ -117,11 +109,13 @@ export const crearEmpleado = async (req, res) => {
   try {
     await conexion.beginTransaction();
 
-    const hash = await bcrypt.hash(datos.password, 10);
+    // La contraseña temporal solo viaja en esta respuesta; en la base queda cifrada
+    const claveTemporal = generarClaveTemporal();
+    const hash = await bcrypt.hash(claveTemporal, 10);
 
     const [usuario] = await conexion.query(
-      `INSERT INTO usuarios (nombre, apellidos, email, telefono, password_hash, rol)
-       VALUES (?, ?, ?, ?, ?, 'empleado')`,
+      `INSERT INTO usuarios (nombre, apellidos, email, telefono, password_hash, rol, debe_cambiar_clave)
+       VALUES (?, ?, ?, ?, ?, 'empleado', TRUE)`,
       [datos.nombre, datos.apellidos, datos.email, datos.telefono, hash]
     );
 
@@ -135,7 +129,7 @@ export const crearEmpleado = async (req, res) => {
     await conexion.commit();
 
     const [creada] = await armarEmpleados("WHERE e.id = ?", [empleado.insertId]);
-    res.status(201).json({ ok: true, data: creada });
+    res.status(201).json({ ok: true, data: { ...creada, clave_temporal: claveTemporal } });
   } catch (err) {
     await conexion.rollback();
     responderError(err, res, "crear la empleada");
@@ -145,11 +139,12 @@ export const crearEmpleado = async (req, res) => {
 };
 
 export const actualizarEmpleado = async (req, res) => {
-  const { error, datos } = validarEmpleado(req.body, false);
+  const { error, datos } = validarEmpleado(req.body);
   if (error) return res.status(400).json({ ok: false, mensaje: error });
 
   // Si no se manda "activo", se conserva el valor actual
   const activo = typeof req.body?.activo === "boolean" ? req.body.activo : null;
+  const restablecer = req.body?.restablecer_clave === true;
   const conexion = await pool.getConnection();
 
   try {
@@ -173,9 +168,14 @@ export const actualizarEmpleado = async (req, res) => {
       [datos.nombre, datos.apellidos, datos.email, datos.telefono, activo, usuarioId]
     );
 
-    if (datos.password) {
-      const hash = await bcrypt.hash(datos.password, 10);
-      await conexion.query("UPDATE usuarios SET password_hash = ? WHERE id = ?", [hash, usuarioId]);
+    let claveTemporal = null;
+    if (restablecer) {
+      claveTemporal = generarClaveTemporal();
+      const hash = await bcrypt.hash(claveTemporal, 10);
+      await conexion.query(
+        "UPDATE usuarios SET password_hash = ?, debe_cambiar_clave = TRUE WHERE id = ?",
+        [hash, usuarioId]
+      );
     }
 
     await conexion.query(
@@ -189,7 +189,7 @@ export const actualizarEmpleado = async (req, res) => {
     await conexion.commit();
 
     const [actualizada] = await armarEmpleados("WHERE e.id = ?", [req.params.id]);
-    res.json({ ok: true, data: actualizada });
+    res.json({ ok: true, data: { ...actualizada, clave_temporal: claveTemporal } });
   } catch (err) {
     await conexion.rollback();
     responderError(err, res, "actualizar la empleada");

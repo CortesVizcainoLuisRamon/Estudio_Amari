@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Flower2 } from "lucide-react";
 import Campo from "./Campo";
+import ModalClaveTemporal from "./ModalClaveTemporal";
 import { crearEmpleado, actualizarEmpleado } from "../services/empleados.service";
 import { COLORES_AGENDA, DIAS } from "../config/empleados";
 
@@ -22,24 +23,26 @@ function ModalEmpleado({ empleado, servicios, onCerrar, onGuardado }) {
     apellidos: empleado?.apellidos ?? "",
     email: empleado?.email ?? "",
     telefono: empleado?.telefono ?? "",
-    password: "",
     puesto: empleado?.puesto ?? "",
     comision_pct: empleado?.comision_pct ?? 40,
     color: empleado?.color ?? COLORES_AGENDA[0],
     dias_laborales: empleado?.dias_laborales ?? [1, 2, 3, 4, 5, 6],
     servicios_ids: empleado?.servicios_ids ?? [],
     activo: empleado?.activo ?? true,
+    restablecer_clave: false,
   });
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const [claveGenerada, setClaveGenerada] = useState(null);
 
   useEffect(() => {
     const alPresionar = (e) => {
-      if (e.key === "Escape") onCerrar();
+      // Con la contraseña a la vista, Escape no debe cerrar (se perdería)
+      if (e.key === "Escape" && !claveGenerada) onCerrar();
     };
     window.addEventListener("keydown", alPresionar);
     return () => window.removeEventListener("keydown", alPresionar);
-  }, [onCerrar]);
+  }, [onCerrar, claveGenerada]);
 
   const cambiar = (e) => {
     const { name, type, value, checked } = e.target;
@@ -60,14 +63,37 @@ function ModalEmpleado({ empleado, servicios, onCerrar, onGuardado }) {
     setEnviando(true);
 
     try {
-      if (editando) await actualizarEmpleado(empleado.id, form);
-      else await crearEmpleado(form);
-      onGuardado();
+      const resultado = editando
+        ? await actualizarEmpleado(empleado.id, form)
+        : await crearEmpleado(form);
+
+      const clave = resultado?.clave_temporal ?? resultado?.data?.clave_temporal ?? null;
+
+      if (clave) {
+        setClaveGenerada({
+          nombre: `${form.nombre.trim()} ${form.apellidos.trim()}`,
+          email: form.email.trim().toLowerCase(),
+          clave,
+          nuevo: !editando,
+        });
+        setEnviando(false);
+      } else if (!editando) {
+        setError(
+          "La empleada se creó, pero no se recibió su contraseña. Ciérrala, edítala y marca «Restablecer contraseña»."
+        );
+        setEnviando(false);
+      } else {
+        onGuardado();
+      }
     } catch (err) {
       setError(err.response?.data?.mensaje || "No se pudo guardar la empleada");
       setEnviando(false);
     }
   };
+
+  if (claveGenerada) {
+    return <ModalClaveTemporal {...claveGenerada} onCerrar={onGuardado} />;
+  }
 
   return (
     <div
@@ -103,17 +129,6 @@ function ModalEmpleado({ empleado, servicios, onCerrar, onGuardado }) {
             <Campo id="apellidos" name="apellidos" etiqueta="Apellido *" required value={form.apellidos} onChange={cambiar} />
             <Campo id="email" name="email" type="email" etiqueta="Email *" required value={form.email} onChange={cambiar} />
             <Campo id="telefono" name="telefono" type="tel" etiqueta="Teléfono" value={form.telefono} onChange={cambiar} />
-            <Campo
-              id="password"
-              name="password"
-              type="password"
-              etiqueta={editando ? "Nueva contraseña (opcional)" : "Contraseña *"}
-              autoComplete="new-password"
-              required={!editando}
-              minLength={editando ? undefined : 8}
-              value={form.password}
-              onChange={cambiar}
-            />
             <Campo
               id="puesto"
               name="puesto"
@@ -184,17 +199,36 @@ function ModalEmpleado({ empleado, servicios, onCerrar, onGuardado }) {
             </div>
           </div>
 
+          {!editando && (
+            <p className="mb-4 rounded-xl bg-amari-bg-soft px-3 py-2 text-xs text-amari-texto">
+              Al guardar se generará una <strong>contraseña temporal</strong> que verás una sola vez. La
+              empleada deberá cambiarla al entrar por primera vez.
+            </p>
+          )}
+
           {editando && (
-            <label className="mb-4 flex items-center gap-2 text-sm text-amari-titulo">
-              <input
-                type="checkbox"
-                name="activo"
-                checked={form.activo}
-                onChange={cambiar}
-                className="h-4 w-4 accent-amari-primario"
-              />
-              Empleada activa (puede iniciar sesión)
-            </label>
+            <div className="mb-4 space-y-2">
+              <label className="flex items-center gap-2 text-sm text-amari-titulo">
+                <input
+                  type="checkbox"
+                  name="activo"
+                  checked={form.activo}
+                  onChange={cambiar}
+                  className="h-4 w-4 accent-amari-primario"
+                />
+                Empleada activa (puede iniciar sesión)
+              </label>
+              <label className="flex items-center gap-2 text-sm text-amari-titulo">
+                <input
+                  type="checkbox"
+                  name="restablecer_clave"
+                  checked={form.restablecer_clave}
+                  onChange={cambiar}
+                  className="h-4 w-4 accent-amari-primario"
+                />
+                Restablecer contraseña (se genera una temporal)
+              </label>
+            </div>
           )}
 
           <div className="flex justify-end gap-3 pt-2">
