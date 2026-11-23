@@ -14,3 +14,8 @@ export const actualizarCliente = async (id, datos) => {
   const { data } = await api.put(`/clientes/${id}`, datos);
   return data.data;
 };
+
+export const crearAcceso = async (id) => {
+  const { data } = await api.post(`/clientes/${id}/acceso`);
+  return data.data;
+};

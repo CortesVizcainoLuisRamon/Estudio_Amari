@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Search, Star, Sprout, Gift } from "lucide-react";
-import { getClientes } from "../../services/clientes.service";
+import { Plus, Pencil, Search, Star, Sprout, Gift, KeyRound } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
+import { getClientes, crearAcceso } from "../../services/clientes.service";
 import { getFidelidadTodos } from "../../services/citas.service";
 import ModalCliente from "../../components/ModalCliente";
+import ModalClaveTemporal from "../../components/ModalClaveTemporal";
 
 // Regla provisional: desde 3 visitas completadas, la clienta es "Regular"
 const VISITAS_REGULAR = 3;
@@ -13,12 +15,17 @@ const normalizar = (t) =>
   (t ?? "").toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
 function ClientesAdmin() {
+  const { usuario } = useAuth();
+  const esAdmin = usuario.rol === "admin";
+
   const [clientes, setClientes] = useState([]);
   const [fidelidad, setFidelidad] = useState({});
   const [busqueda, setBusqueda] = useState("");
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+  const [aviso, setAviso] = useState("");
   const [modal, setModal] = useState(null); // null = cerrado, { cliente } = abierto
+  const [clave, setClave] = useState(null); // contraseña temporal por mostrar
   const [version, setVersion] = useState(0);
 
   useEffect(() => {
@@ -46,9 +53,43 @@ function ClientesAdmin() {
 
   const cerrarModal = () => setModal(null);
 
-  const alGuardar = () => {
+  const alGuardar = (guardado) => {
     setModal(null);
     setVersion((v) => v + 1);
+
+    if (guardado?.clave_temporal) {
+      setClave({
+        nombre: `${guardado.nombre} ${guardado.apellidos}`,
+        email: guardado.email,
+        clave: guardado.clave_temporal,
+        nuevo: true,
+      });
+    }
+  };
+
+  const darAcceso = async (c) => {
+    const restablecer = c.tiene_acceso;
+
+    if (
+      restablecer &&
+      !window.confirm(`¿Restablecer la contraseña de ${c.nombre}? Su contraseña actual dejará de funcionar.`)
+    ) {
+      return;
+    }
+
+    setAviso("");
+    try {
+      const resultado = await crearAcceso(c.id);
+      setClave({
+        nombre: `${c.nombre} ${c.apellidos}`,
+        email: c.email,
+        clave: resultado.clave_temporal,
+        nuevo: !restablecer,
+      });
+      setVersion((v) => v + 1);
+    } catch (err) {
+      setAviso(err.response?.data?.mensaje ?? "No se pudo generar el acceso");
+    }
   };
 
   const texto = normalizar(busqueda);
@@ -86,6 +127,15 @@ function ClientesAdmin() {
         />
       </div>
 
+      {aviso && (
+        <p
+          onClick={() => setAviso("")}
+          className="mb-4 cursor-pointer rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600"
+        >
+          {aviso}
+        </p>
+      )}
+
       {cargando && <p className="text-center text-amari-primario">Cargando clientes...</p>}
       {error && <p className="text-center text-red-600">{error}</p>}
 
@@ -121,6 +171,9 @@ function ClientesAdmin() {
                   <p className="truncate text-xs text-amari-acento">
                     {c.telefono || c.email || "Sin datos de contacto"}
                   </p>
+                  {esAdmin && !c.tiene_acceso && (
+                    <p className="mt-0.5 text-[11px] font-medium text-amber-700">Sin acceso al sistema</p>
+                  )}
                 </div>
 
                 <div className="text-right">
@@ -145,13 +198,27 @@ function ClientesAdmin() {
                   )}
                 </div>
 
-                <button
-                  onClick={() => setModal({ cliente: c })}
-                  aria-label={`Editar a ${c.nombre}`}
-                  className="rounded-lg p-1.5 text-amari-acento transition hover:bg-amari-bg-soft focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-                >
-                  <Pencil size={16} />
-                </button>
+                <div className="flex shrink-0 gap-1">
+                  {esAdmin && (
+                    <button
+                      onClick={() => darAcceso(c)}
+                      aria-label={
+                        c.tiene_acceso ? `Restablecer contraseña de ${c.nombre}` : `Crear acceso a ${c.nombre}`
+                      }
+                      title={c.tiene_acceso ? "Restablecer contraseña" : "Crear acceso"}
+                      className="rounded-lg p-1.5 text-amari-acento transition hover:bg-amari-bg-soft focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                    >
+                      <KeyRound size={16} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setModal({ cliente: c })}
+                    aria-label={`Editar a ${c.nombre}`}
+                    className="rounded-lg p-1.5 text-amari-acento transition hover:bg-amari-bg-soft focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                </div>
               </article>
             );
           })}
@@ -161,6 +228,8 @@ function ClientesAdmin() {
       {modal && (
         <ModalCliente cliente={modal.cliente} onCerrar={cerrarModal} onGuardado={alGuardar} />
       )}
+
+      {clave && <ModalClaveTemporal {...clave} onCerrar={() => setClave(null)} />}
     </>
   );
 }
