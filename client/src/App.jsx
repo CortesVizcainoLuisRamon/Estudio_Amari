@@ -49,6 +49,7 @@ function App() {
 
       <Route element={<RutaProtegida roles={["empleado"]} />}>
         <Route element={<AppLayout />}>
+          <Route path="/empleado/servicios" element={<ServiciosAdmin />} />
           <Route path="/empleado" element={<DashboardEmpleada />} />
           <Route path="/empleado/citas" element={<AgendaAdmin />} />
           <Route path="/empleado/clientes" element={<ClientesAdmin />} />

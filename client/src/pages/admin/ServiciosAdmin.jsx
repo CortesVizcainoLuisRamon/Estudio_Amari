@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Plus, Pencil } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
 import { getServiciosGestion, getCategorias } from "../../services/servicios.service";
 import { iconoCategoria } from "../../config/categorias";
 import ModalServicio from "../../components/ModalServicio";
@@ -22,6 +23,9 @@ const chip = (activo) =>
   }`;
 
 function ServiciosAdmin() {
+  const { usuario } = useAuth();
+  const esAdmin = usuario.rol === "admin";
+
   const [servicios, setServicios] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [filtro, setFiltro] = useState(null);
@@ -59,7 +63,9 @@ function ServiciosAdmin() {
     setVersion((v) => v + 1);
   };
 
-  const visibles = filtro ? servicios.filter((s) => s.categoria_id === filtro) : servicios;
+  // La empleada solo ve los servicios activos
+  const catalogo = esAdmin ? servicios : servicios.filter((s) => s.activo);
+  const visibles = filtro ? catalogo.filter((s) => s.categoria_id === filtro) : catalogo;
 
   return (
     <>
@@ -69,16 +75,20 @@ function ServiciosAdmin() {
             Catálogo de Servicios
           </h1>
           <p className="mt-1 text-sm text-amari-acento">
-            Gestiona los servicios que ofrece el estudio
+            {esAdmin
+              ? "Gestiona los servicios que ofrece el estudio"
+              : "Servicios del estudio, con su duración y precio"}
           </p>
         </div>
-        <button
-          onClick={() => setModal({ servicio: null })}
-          disabled={cargando || Boolean(error)}
-          className="btn-primario"
-        >
-          <Plus size={18} /> Nuevo servicio
-        </button>
+        {esAdmin && (
+          <button
+            onClick={() => setModal({ servicio: null })}
+            disabled={cargando || Boolean(error)}
+            className="btn-primario"
+          >
+            <Plus size={18} /> Nuevo servicio
+          </button>
+        )}
       </div>
 
       {cargando && <p className="text-center text-amari-primario">Cargando servicios...</p>}
@@ -121,13 +131,15 @@ function ServiciosAdmin() {
                         {!s.activo && " · Inactivo"}
                       </p>
                     </div>
-                    <button
-                      onClick={() => setModal({ servicio: s })}
-                      aria-label={`Editar ${s.nombre}`}
-                      className="shrink-0 rounded-lg p-1.5 text-amari-acento transition hover:bg-amari-bg-soft focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-                    >
-                      <Pencil size={16} />
-                    </button>
+                    {esAdmin && (
+                      <button
+                        onClick={() => setModal({ servicio: s })}
+                        aria-label={`Editar ${s.nombre}`}
+                        className="shrink-0 rounded-lg p-1.5 text-amari-acento transition hover:bg-amari-bg-soft focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                    )}
                   </div>
                   <div className="mt-4 flex items-end justify-between gap-3">
                     <span className="shrink-0 text-xs text-amari-acento">{s.duracion_min} min</span>
@@ -142,7 +154,7 @@ function ServiciosAdmin() {
         </>
       )}
 
-      {modal && (
+      {esAdmin && modal && (
         <ModalServicio
           servicio={modal.servicio}
           categorias={categorias}
