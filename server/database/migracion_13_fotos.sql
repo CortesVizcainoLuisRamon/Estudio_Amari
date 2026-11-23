@@ -1,0 +1,3 @@
+USE estudio_amari;
+
+ALTER TABLE usuarios ADD COLUMN foto VARCHAR(255) NULL DEFAULT NULL;

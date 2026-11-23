@@ -17,7 +17,7 @@ const texto = (v) => (typeof v === "string" ? v.trim() : "");
 export const obtenerPerfilCompleto = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT u.id, u.nombre, u.apellidos, u.email, u.telefono, u.rol,
+      `SELECT u.id, u.nombre, u.apellidos, u.email, u.telefono, u.rol, u.foto,
               DATE_FORMAT(c.fecha_nacimiento, '%Y-%m-%d') AS fecha_nacimiento
        FROM usuarios u
        LEFT JOIN clientes c ON c.usuario_id = u.id

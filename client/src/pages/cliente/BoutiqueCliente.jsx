@@ -30,7 +30,7 @@ function TarjetaProducto({ producto }) {
 
   return (
     <article className="tarjeta flex min-w-0 flex-col overflow-hidden">
-      <div className="relative flex aspect-[4/3] items-center justify-center bg-amari-bg-soft">
+            <div className="relative flex h-44 items-center justify-center bg-amari-bg-soft sm:h-48">
         {producto.imagen_url ? (
           <img
             src={producto.imagen_url}
@@ -180,7 +180,7 @@ function BoutiqueCliente() {
               Por ahora no hay productos disponibles.
             </p>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {visibles.map((p) => (
                 <TarjetaProducto key={p.id} producto={p} />
               ))}

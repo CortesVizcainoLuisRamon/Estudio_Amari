@@ -3,3 +3,4 @@ node_modules/
 dist/
 docs/Proyecto_FEPI.pdf
 *.pdf
+server/uploads/

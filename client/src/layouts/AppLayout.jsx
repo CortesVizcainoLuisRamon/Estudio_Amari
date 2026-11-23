@@ -43,7 +43,7 @@ function AppLayout() {
     return () => window.removeEventListener("keydown", alPresionar);
   }, [abierto]);
 
-  // Perfil fresco desde el servidor: nombre actualizado y aviso de contraseña temporal
+  // Perfil fresco desde el servidor: nombre, foto y aviso de contraseña temporal
   useEffect(() => {
     let activo = true;
     obtenerPerfil()
@@ -100,8 +100,12 @@ function AppLayout() {
         </div>
 
         <div className="mx-3 mb-3 flex items-center gap-3 border-y border-amari-borde px-1 py-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amari-primario text-xs font-bold text-white">
-            {iniciales}
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-amari-primario text-xs font-bold text-white">
+            {perfil?.foto ? (
+              <img src={perfil.foto} alt="" className="h-full w-full object-cover" />
+            ) : (
+              iniciales
+            )}
           </span>
           <div className="min-w-0 leading-tight">
             <p className="truncate text-sm font-semibold text-amari-titulo">

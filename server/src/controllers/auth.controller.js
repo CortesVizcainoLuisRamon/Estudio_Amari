@@ -116,7 +116,7 @@ export const login = async (req, res) => {
 export const perfil = async (req, res) => {
   try {
         const [rows] = await pool.query(
-      `SELECT id, nombre, apellidos, email, telefono, rol, debe_cambiar_clave
+      `SELECT id, nombre, apellidos, email, telefono, rol, debe_cambiar_clave, foto
        FROM usuarios WHERE id = ? AND activo = TRUE`,
       [req.usuario.id]
     );

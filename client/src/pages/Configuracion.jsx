@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import { UserRound, KeyRound, ShieldAlert } from "lucide-react";
+import { UserRound, KeyRound, ShieldAlert, Camera } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { getPerfilCompleto, actualizarPerfil, cambiarClave } from "../services/perfil.service";
+import { subirFotoPerfil, quitarFotoPerfil } from "../services/imagenes.service";
+import SelectorFoto from "../components/SelectorFoto";
 
 const entrada =
   "w-full rounded-xl border border-amari-borde bg-white px-4 py-2.5 text-sm text-amari-titulo focus:border-amari-primario focus:outline-none focus:ring-2 focus:ring-amari-primario/20";
@@ -210,6 +212,7 @@ function Configuracion() {
   const { recargarPerfil, debeCambiarClave } = useOutletContext();
   const [version, setVersion] = useState(0);
   const [resultado, setResultado] = useState(null);
+  const [foto, setFoto] = useState(undefined); // undefined = usar la que viene del servidor
 
   useEffect(() => {
     let activo = true;
@@ -248,6 +251,28 @@ function Configuracion() {
 
       {resultado?.data && (
         <div className="grid max-w-3xl grid-cols-1 gap-6">
+          <div className="tarjeta p-5">
+            <h2 className="mb-4 flex items-center gap-2 font-display text-xl font-semibold text-amari-titulo">
+              <Camera size={20} /> Foto de perfil
+            </h2>
+            <SelectorFoto
+              redonda
+              camara="user"
+              url={foto !== undefined ? foto : resultado.data.foto}
+              iniciales={`${resultado.data.nombre[0] ?? ""}${resultado.data.apellidos[0] ?? ""}`.toUpperCase()}
+              alSubir={async (archivo) => {
+                const url = await subirFotoPerfil(archivo);
+                setFoto(url);
+                recargarPerfil();
+              }}
+              alQuitar={async () => {
+                await quitarFotoPerfil();
+                setFoto(null);
+                recargarPerfil();
+              }}
+            />
+          </div>
+
           <FormClave alCambiar={recargarPerfil} />
           <FormDatos
             key={version}

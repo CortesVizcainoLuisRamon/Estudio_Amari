@@ -93,13 +93,13 @@ function BoutiqueAdmin() {
               Aún no hay productos. Crea el primero con &quot;Nuevo producto&quot;.
             </p>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {visibles.map((p) => (
                 <article
                   key={p.id}
                   className={`tarjeta min-w-0 overflow-hidden ${p.activo ? "" : "opacity-60"}`}
                 >
-                  <div className="relative flex aspect-[4/3] items-center justify-center bg-amari-bg-soft">
+                  <div className="relative flex h-44 items-center justify-center bg-amari-bg-soft sm:h-48">
                     {p.imagen_url ? (
                       <img
                         src={p.imagen_url}

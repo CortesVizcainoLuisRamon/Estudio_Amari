@@ -56,8 +56,9 @@ const validarProducto = (d = {}) => {
   if (!TIPOS_VARIANTE.includes(d.tipo_variante)) {
     return { error: "El tipo de variante no es válido" };
   }
-  if (imagen && (!/^https?:\/\//i.test(imagen) || imagen.length > 500)) {
-    return { error: "La imagen debe ser un enlace que empiece con http:// o https://" };
+    const esSubida = /^\/api\/uploads\/productos\/[0-9a-f-]{36}\.webp$/i.test(imagen);
+  if (imagen && !esSubida && (!/^https?:\/\//i.test(imagen) || imagen.length > 500)) {
+    return { error: "La imagen no es válida" };
   }
 
   const entrada = Array.isArray(d.variantes) ? d.variantes : [];

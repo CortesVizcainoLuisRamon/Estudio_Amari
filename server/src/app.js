@@ -15,6 +15,8 @@ import ventasRoutes from "./routes/ventas.routes.js";
 import notificacionesRoutes from "./routes/notificaciones.routes.js";
 import perfilRoutes from "./routes/perfil.routes.js";
 import clientesAccesoRoutes from "./routes/clientes-acceso.routes.js";
+import imagenesRoutes from "./routes/imagenes.routes.js";
+import { RAIZ_SUBIDAS } from "./config/subidas.js";
 
 dotenv.config();
 
@@ -54,6 +56,8 @@ app.use("/api/ventas", ventasRoutes);
 app.use("/api/notificaciones", notificacionesRoutes);
 app.use("/api/perfil", perfilRoutes);
 app.use("/api/clientes", clientesAccesoRoutes);
+app.use("/api/uploads", express.static(RAIZ_SUBIDAS, { maxAge: "30d", immutable: true, index: false }));
+app.use("/api/imagenes", imagenesRoutes);
 
 const PORT = process.env.PORT || 3000;
 

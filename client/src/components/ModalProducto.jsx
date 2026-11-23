@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { X, Flower2, Plus, Trash2 } from "lucide-react";
 import Campo from "./Campo";
+import SelectorFoto from "./SelectorFoto";
 import { crearProducto, actualizarProducto } from "../services/productos.service";
+import { subirImagenProducto } from "../services/imagenes.service";
 import { CATEGORIAS_PRODUCTO, TIPOS_VARIANTE } from "../config/boutique";
 
 const claseSelect =
@@ -9,6 +11,7 @@ const claseSelect =
 const claseEtiqueta = "mb-1 block text-xs font-semibold uppercase tracking-wide text-amari-primario";
 const claseEntrada =
   "rounded-xl border border-amari-borde px-3 py-2 text-sm text-amari-titulo focus:border-amari-primario focus:outline-none focus:ring-2 focus:ring-amari-primario/20";
+
 function ModalProducto({ producto, onCerrar, onGuardado }) {
   const editando = Boolean(producto);
 
@@ -28,6 +31,7 @@ function ModalProducto({ producto, onCerrar, onGuardado }) {
   );
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
 
   useEffect(() => {
     const alPresionar = (e) => {
@@ -127,14 +131,18 @@ function ModalProducto({ producto, onCerrar, onGuardado }) {
             />
           </div>
 
-          <Campo
-            id="imagen_url"
-            etiqueta="Imagen (enlace, opcional)"
-            placeholder="https://..."
-            maxLength={500}
-            value={form.imagen_url}
-            onChange={cambiar("imagen_url")}
-          />
+          <div>
+            <span className={claseEtiqueta}>Foto del producto</span>
+            <SelectorFoto
+              url={form.imagen_url}
+              onOcupado={setSubiendoFoto}
+              alSubir={async (archivo) => {
+                const url = await subirImagenProducto(archivo);
+                setForm((f) => ({ ...f, imagen_url: url }));
+              }}
+              alQuitar={async () => setForm((f) => ({ ...f, imagen_url: "" }))}
+            />
+          </div>
 
           <div>
             <label htmlFor="descripcion" className={claseEtiqueta}>
@@ -238,7 +246,7 @@ function ModalProducto({ producto, onCerrar, onGuardado }) {
             >
               Cancelar
             </button>
-            <button type="submit" disabled={enviando} className="btn-primario">
+            <button type="submit" disabled={enviando || subiendoFoto} className="btn-primario">
               {enviando ? "Guardando..." : editando ? "Guardar cambios" : "Crear producto"}
             </button>
           </div>
