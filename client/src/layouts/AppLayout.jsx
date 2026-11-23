@@ -7,8 +7,10 @@ import { rutaPorRol } from "../routes/rutaPorRol";
 import logo from "../assets/branding/logo-amari-cuadrado.png";
 import { useCarrito } from "../hooks/useCarrito";
 import { obtenerPerfil } from "../services/auth.service";
+import { getContadorNotificaciones } from "../services/notificaciones.service";
 
 const ETIQUETA_ROL = { admin: "Admin", empleado: "Empleado", cliente: "Cliente" };
+const RUTA_NOTIFICACIONES_CLIENTE = "/cliente/notificaciones";
 
 const claseEnlace = ({ isActive }) =>
   `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
@@ -25,7 +27,10 @@ function AppLayout() {
   const [abierto, setAbierto] = useState(false);
   const [perfil, setPerfil] = useState(null);
   const [version, setVersion] = useState(0);
+  const [noLeidas, setNoLeidas] = useState(0);
+  const [versionContador, setVersionContador] = useState(0);
 
+  const esCliente = usuario.rol === "cliente";
   const menu = MENUS[usuario.rol] ?? [];
   const nombre = perfil?.nombre ?? usuario.nombre;
   const apellidos = perfil?.apellidos ?? usuario.apellidos;
@@ -55,6 +60,27 @@ function AppLayout() {
       activo = false;
     };
   }, [version]);
+
+  // Avisos sin leer de la clienta: al navegar, cada minuto y cuando se marcan como leídos
+  useEffect(() => {
+    if (!esCliente) return;
+    let activo = true;
+
+    const cargar = () =>
+      getContadorNotificaciones()
+        .then((total) => {
+          if (activo) setNoLeidas(total);
+        })
+        .catch(() => {});
+
+    cargar();
+    const temporizador = setInterval(cargar, 60000);
+
+    return () => {
+      activo = false;
+      clearInterval(temporizador);
+    };
+  }, [esCliente, pathname, versionContador]);
 
   const salir = () => {
     logout();
@@ -116,17 +142,26 @@ function AppLayout() {
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3">
-          {menu.map(({ to, texto, icono: Icono, end, insignia }) => (
-            <NavLink key={to} to={to} end={end} onClick={cerrarMenu} className={claseEnlace}>
-              <Icono size={18} />
-              {texto}
-              {insignia === "carrito" && enCarrito > 0 && (
-                <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-amari-primario ring-1 ring-amari-primario/30">
-                  {enCarrito}
-                </span>
-              )}
-            </NavLink>
-          ))}
+          {menu.map(({ to, texto, icono: Icono, end, insignia }) => {
+            const cuenta =
+              insignia === "carrito"
+                ? enCarrito
+                : esCliente && to === RUTA_NOTIFICACIONES_CLIENTE
+                  ? noLeidas
+                  : 0;
+
+            return (
+              <NavLink key={to} to={to} end={end} onClick={cerrarMenu} className={claseEnlace}>
+                <Icono size={18} />
+                {texto}
+                {cuenta > 0 && (
+                  <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-amari-primario ring-1 ring-amari-primario/30">
+                    {cuenta > 9 ? "9+" : cuenta}
+                  </span>
+                )}
+              </NavLink>
+            );
+          })}
         </nav>
 
         <div className="space-y-1 border-t border-amari-borde p-3">
@@ -163,6 +198,7 @@ function AppLayout() {
           <Outlet
             context={{
               recargarPerfil: () => setVersion((v) => v + 1),
+              recargarContador: () => setVersionContador((v) => v + 1),
               debeCambiarClave: Boolean(perfil?.debe_cambiar_clave),
             }}
           />

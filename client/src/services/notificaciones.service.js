@@ -9,3 +9,6 @@ export const descartarNotificacion = (id) => api.delete(`/notificaciones/${id}`)
 export const getMisNotificaciones = async () => (await api.get("/notificaciones/mias")).data.data;
 export const marcarLeida = (id) => api.patch(`/notificaciones/mias/${id}/leida`);
 export const marcarTodasLeidas = () => api.patch("/notificaciones/mias/leidas");
+
+export const getContadorNotificaciones = async () =>
+  (await api.get("/notificaciones/mias/contador")).data.data.total;

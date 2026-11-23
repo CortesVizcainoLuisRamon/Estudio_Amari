@@ -195,3 +195,22 @@ export const marcarTodasLeidas = async (req, res) => {
     res.status(500).json({ ok: false, mensaje: "Error al actualizar las notificaciones" });
   }
 };
+
+export const contarMisNoLeidas = async (req, res) => {
+  try {
+    const clienteId = await clienteDeSesion(req.usuario.id);
+    if (!clienteId) return res.json({ ok: true, data: { total: 0 } });
+
+    await sincronizar();
+
+    const [[fila]] = await pool.query(
+      "SELECT COUNT(*) AS total FROM notificaciones WHERE cliente_id = ? AND leida = FALSE",
+      [clienteId]
+    );
+
+    res.json({ ok: true, data: { total: Number(fila.total) } });
+  } catch (err) {
+    console.error("Error al contar notificaciones:", err.message);
+    res.status(500).json({ ok: false, mensaje: "Error al contar las notificaciones" });
+  }
+};

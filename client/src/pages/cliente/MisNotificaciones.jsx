@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import { Bell, MessageCircle, CheckCheck } from "lucide-react";
 import { getMisNotificaciones, marcarLeida, marcarTodasLeidas } from "../../services/notificaciones.service";
 import { TIPOS_NOTIFICACION, WHATSAPP_ESTUDIO, enlaceWA } from "../../config/notificaciones";
 
 function MisNotificaciones() {
+  const { recargarContador } = useOutletContext();
   const [version, setVersion] = useState(0);
   const [resultado, setResultado] = useState(null);
 
@@ -24,6 +26,7 @@ function MisNotificaciones() {
     try {
       await fn();
       setVersion((v) => v + 1);
+      recargarContador();
     } catch {
       /* si falla, la lista simplemente no cambia */
     }

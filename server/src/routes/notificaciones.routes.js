@@ -5,6 +5,7 @@ import {
   marcarEnviada,
   descartarNotificacion,
   obtenerMisNotificaciones,
+  contarMisNoLeidas,
   marcarLeida,
   marcarTodasLeidas,
 } from "../controllers/notificaciones.controller.js";
@@ -18,6 +19,7 @@ router.use(verificarToken);
 router.get("/mias", permitirRoles("cliente"), obtenerMisNotificaciones);
 router.patch("/mias/leidas", permitirRoles("cliente"), marcarTodasLeidas);
 router.patch("/mias/:id/leida", permitirRoles("cliente"), marcarLeida);
+router.get("/mias/contador", permitirRoles("cliente"), contarMisNoLeidas);
 
 // Admin
 router.get("/", permitirRoles("admin"), obtenerNotificaciones);
