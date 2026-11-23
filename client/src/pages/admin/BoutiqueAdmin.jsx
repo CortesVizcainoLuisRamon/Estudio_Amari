@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil, ShoppingBag } from "lucide-react";
+import { Plus, Pencil, ShoppingBag, TriangleAlert } from "lucide-react";
 import { getProductosGestion } from "../../services/productos.service";
 import ModalProducto from "../../components/ModalProducto";
 import { STOCK_BAJO } from "../../config/boutique";
@@ -19,10 +19,15 @@ const claseStock = (stock) =>
       ? "bg-amber-100 text-amber-700"
       : "bg-amari-bg-soft text-amari-primario-oscuro";
 
+// Un producto activo tiene stock bajo si alguna de sus variantes está al límite o agotada
+const conStockBajo = (producto) =>
+  producto.activo && producto.variantes.some((v) => v.stock <= STOCK_BAJO);
+
 function BoutiqueAdmin() {
   const [version, setVersion] = useState(0);
   const [resultado, setResultado] = useState(null);
   const [categoria, setCategoria] = useState(null);
+  const [soloBajo, setSoloBajo] = useState(false);
   const [modal, setModal] = useState(null); // { producto }
 
   const clave = String(version);
@@ -50,7 +55,10 @@ function BoutiqueAdmin() {
   const recargar = () => setVersion((v) => v + 1);
 
   const categorias = [...new Set(productos.map((p) => p.categoria))];
-  const visibles = categoria ? productos.filter((p) => p.categoria === categoria) : productos;
+  const cantidadBajo = productos.filter(conStockBajo).length;
+  const visibles = productos.filter(
+    (p) => (!categoria || p.categoria === categoria) && (!soloBajo || conStockBajo(p))
+  );
 
   return (
     <>
@@ -75,22 +83,41 @@ function BoutiqueAdmin() {
 
       {!cargando && !error && (
         <>
-          {categorias.length > 1 && (
+          {(categorias.length > 1 || cantidadBajo > 0) && (
             <div className="mb-6 flex flex-wrap gap-2">
-              <button onClick={() => setCategoria(null)} className={chip(categoria === null)}>
-                ✨ Todos
-              </button>
-              {categorias.map((c) => (
-                <button key={c} onClick={() => setCategoria(c)} className={chip(categoria === c)}>
-                  {c}
+              {categorias.length > 1 && (
+                <>
+                  <button onClick={() => setCategoria(null)} className={chip(categoria === null)}>
+                    ✨ Todos
+                  </button>
+                  {categorias.map((c) => (
+                    <button key={c} onClick={() => setCategoria(c)} className={chip(categoria === c)}>
+                      {c}
+                    </button>
+                  ))}
+                </>
+              )}
+
+              {cantidadBajo > 0 && (
+                <button
+                  onClick={() => setSoloBajo((v) => !v)}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-sm font-medium transition ${
+                    soloBajo
+                      ? "border-transparent bg-amber-500 text-white shadow-md shadow-amber-500/30"
+                      : "border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                  }`}
+                >
+                  <TriangleAlert size={14} /> Stock bajo ({cantidadBajo})
                 </button>
-              ))}
+              )}
             </div>
           )}
 
           {visibles.length === 0 ? (
             <p className="tarjeta p-10 text-center text-sm text-amari-acento">
-              Aún no hay productos. Crea el primero con &quot;Nuevo producto&quot;.
+              {productos.length === 0
+                ? 'Aún no hay productos. Crea el primero con "Nuevo producto".'
+                : "No hay productos con ese filtro."}
             </p>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

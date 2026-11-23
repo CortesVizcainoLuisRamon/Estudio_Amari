@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, ShoppingCart, Check } from "lucide-react";
+import { ShoppingBag, ShoppingCart, Check, Search } from "lucide-react";
 import { getCatalogo } from "../../services/productos.service";
 import { useCarrito } from "../../hooks/useCarrito";
 import { STOCK_BAJO } from "../../config/boutique";
@@ -12,6 +12,11 @@ const chip = (activo) =>
       ? "border-transparent bg-linear-to-r from-amari-primario to-amari-primario-oscuro text-white shadow-md shadow-amari-primario/30"
       : "border-amari-borde bg-white text-amari-primario hover:bg-amari-bg-soft"
   }`;
+
+const normalizar = (t) =>
+  (t ?? "").toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+const estaAgotado = (producto) => producto.variantes.every((v) => v.stock <= 0);
 
 function TarjetaProducto({ producto }) {
   const { agregar } = useCarrito();
@@ -30,12 +35,14 @@ function TarjetaProducto({ producto }) {
 
   return (
     <article className="tarjeta flex min-w-0 flex-col overflow-hidden">
-            <div className="relative flex h-44 items-center justify-center bg-amari-bg-soft sm:h-48">
+      <div className="relative flex h-44 items-center justify-center bg-amari-bg-soft sm:h-48">
         {producto.imagen_url ? (
           <img
             src={producto.imagen_url}
             alt={producto.nombre}
-            className="absolute inset-0 h-full w-full object-cover"
+            className={`absolute inset-0 h-full w-full object-cover ${
+              agotado ? "opacity-70 grayscale" : ""
+            }`}
             onError={(e) => {
               e.currentTarget.style.display = "none";
             }}
@@ -45,6 +52,11 @@ function TarjetaProducto({ producto }) {
         <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-semibold text-amari-primario-oscuro">
           {producto.categoria}
         </span>
+        {agotado && (
+          <span className="absolute right-3 top-3 rounded-full bg-red-600 px-2.5 py-0.5 text-[11px] font-bold text-white shadow">
+            Agotado
+          </span>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col p-4">
@@ -115,6 +127,8 @@ function BoutiqueCliente() {
   const { cantidad } = useCarrito();
   const [resultado, setResultado] = useState(null);
   const [categoria, setCategoria] = useState(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [orden, setOrden] = useState("catalogo");
 
   useEffect(() => {
     let activo = true;
@@ -137,7 +151,22 @@ function BoutiqueCliente() {
   const productos = resultado?.data ?? [];
 
   const categorias = [...new Set(productos.map((p) => p.categoria))];
-  const visibles = categoria ? productos.filter((p) => p.categoria === categoria) : productos;
+  const texto = normalizar(busqueda);
+
+  // Los agotados siempre van al final; dentro de cada grupo se aplica el orden elegido
+  const visibles = productos
+    .filter(
+      (p) =>
+        (!categoria || p.categoria === categoria) &&
+        normalizar(`${p.nombre} ${p.descripcion} ${p.categoria}`).includes(texto)
+    )
+    .sort((a, b) => {
+      const porAgotado = Number(estaAgotado(a)) - Number(estaAgotado(b));
+      if (porAgotado !== 0) return porAgotado;
+      if (orden === "menor") return a.precio - b.precio;
+      if (orden === "mayor") return b.precio - a.precio;
+      return 0;
+    });
 
   return (
     <>
@@ -162,6 +191,34 @@ function BoutiqueCliente() {
 
       {!cargando && !error && (
         <>
+          <div className="mb-4 flex flex-wrap gap-3">
+            <div className="relative min-w-0 flex-1 basis-60">
+              <Search
+                size={18}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-amari-acento"
+              />
+              <input
+                type="search"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Buscar en la boutique..."
+                aria-label="Buscar productos"
+                className="w-full rounded-full border border-amari-borde bg-white py-2.5 pl-11 pr-4 text-sm text-amari-titulo placeholder:text-amari-acento/60 focus:border-amari-primario focus:outline-none focus:ring-2 focus:ring-amari-primario/20"
+              />
+            </div>
+
+            <select
+              value={orden}
+              onChange={(e) => setOrden(e.target.value)}
+              aria-label="Ordenar productos"
+              className="rounded-full border border-amari-borde bg-white px-4 py-2.5 text-sm text-amari-titulo focus:border-amari-primario focus:outline-none focus:ring-2 focus:ring-amari-primario/20"
+            >
+              <option value="catalogo">Orden del catálogo</option>
+              <option value="menor">Precio: menor a mayor</option>
+              <option value="mayor">Precio: mayor a menor</option>
+            </select>
+          </div>
+
           {categorias.length > 1 && (
             <div className="mb-6 flex flex-wrap gap-2">
               <button onClick={() => setCategoria(null)} className={chip(categoria === null)}>
@@ -177,7 +234,9 @@ function BoutiqueCliente() {
 
           {visibles.length === 0 ? (
             <p className="tarjeta p-10 text-center text-sm text-amari-acento">
-              Por ahora no hay productos disponibles.
+              {productos.length === 0
+                ? "Por ahora no hay productos disponibles."
+                : "No se encontraron productos con esa búsqueda."}
             </p>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
