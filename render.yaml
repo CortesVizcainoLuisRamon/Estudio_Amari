@@ -1,0 +1,33 @@
+# Despliegue en Render: un solo servicio que sirve la API y el cliente compilado.
+services:
+  - type: web
+    name: estudio-amari
+    runtime: node
+    plan: free
+    buildCommand: npm install --prefix client --include=dev && npm run build --prefix client && npm install --prefix server
+    startCommand: npm start --prefix server
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: TZ
+        value: America/Mexico_City
+      - key: DB_SSL
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      # Estos se capturan en el panel de Render (no se escriben aquí):
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: CLOUDINARY_URL
+        sync: false

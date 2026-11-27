@@ -4,7 +4,9 @@ import { randomUUID } from "node:crypto";
 import multer from "multer";
 import sharp from "sharp";
 import { pool } from "../config/db.js";
-import { RAIZ_SUBIDAS, URL_SUBIDAS } from "../config/subidas.js";
+import { RAIZ_SUBIDAS, URL_SUBIDAS, CARPETA_CLOUDINARY, usaCloudinary } from "../config/subidas.js";
+import { obtenerCloudinary } from "../config/cloudinary.js";
+import { idPublicoNube } from "../utils/urlsSubidas.js";
 
 const MAX_BYTES = 12 * 1024 * 1024;
 const FORMATOS = ["jpeg", "png", "webp"];
@@ -27,7 +29,18 @@ export const recibirImagen = (req, res, next) => {
   });
 };
 
+const subirANube = (buffer, carpeta, id) =>
+  new Promise((resolve, reject) => {
+    const flujo = obtenerCloudinary().uploader.upload_stream(
+      // La ruta completa va en public_id: así funciona igual en cuentas con carpetas fijas o dinámicas
+      { public_id: `${CARPETA_CLOUDINARY}/${carpeta}/${id}`, resource_type: "image" },
+      (err, resultado) => (err ? reject(err) : resolve(resultado.secure_url))
+    );
+    flujo.end(buffer);
+  });
+
 // Valida que sea una imagen real, la endereza, la recorta y la guarda como WebP
+// (en Cloudinary si está configurado; si no, en server/uploads)
 const procesar = async (buffer, carpeta, ancho, alto) => {
   let meta;
   try {
@@ -39,21 +52,32 @@ const procesar = async (buffer, carpeta, ancho, alto) => {
     throw new ErrorImagen("Usa una imagen JPG, PNG o WebP");
   }
 
-  const nombre = `${randomUUID()}.webp`;
-  const carpetaDisco = path.join(RAIZ_SUBIDAS, carpeta);
-  await fs.mkdir(carpetaDisco, { recursive: true });
-
-  await sharp(buffer, OPCIONES_SHARP)
+  const id = randomUUID();
+  const webp = await sharp(buffer, OPCIONES_SHARP)
     .rotate()
     .resize(ancho, alto, { fit: "cover", position: "centre" })
     .webp({ quality: 80 })
-    .toFile(path.join(carpetaDisco, nombre));
+    .toBuffer();
 
-  return `${URL_SUBIDAS}/${carpeta}/${nombre}`;
+  if (usaCloudinary()) return subirANube(webp, carpeta, id);
+
+  const carpetaDisco = path.join(RAIZ_SUBIDAS, carpeta);
+  await fs.mkdir(carpetaDisco, { recursive: true });
+  await fs.writeFile(path.join(carpetaDisco, `${id}.webp`), webp);
+
+  return `${URL_SUBIDAS}/${carpeta}/${id}.webp`;
 };
 
 const borrarArchivo = async (url, carpeta) => {
-  if (typeof url !== "string" || !url.startsWith(`${URL_SUBIDAS}/${carpeta}/`)) return;
+  if (typeof url !== "string") return;
+
+  const idNube = idPublicoNube(url, carpeta);
+  if (idNube) {
+    await obtenerCloudinary().uploader.destroy(idNube).catch(() => {});
+    return;
+  }
+
+  if (!url.startsWith(`${URL_SUBIDAS}/${carpeta}/`)) return;
   // basename evita rutas con ../
   await fs.unlink(path.join(RAIZ_SUBIDAS, carpeta, path.basename(url))).catch(() => {});
 };

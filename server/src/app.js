@@ -1,7 +1,10 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { pool } from "./config/db.js";
+import { pool, ZONA_HORARIA } from "./config/db.js";
 import serviciosRoutes from "./routes/servicios.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import empleadosRoutes from "./routes/empleados.routes.js";
@@ -19,6 +22,9 @@ import imagenesRoutes from "./routes/imagenes.routes.js";
 import { RAIZ_SUBIDAS } from "./config/subidas.js";
 
 dotenv.config();
+
+// Mismo horario del estudio en cualquier servidor (en la nube el reloj va en UTC)
+process.env.TZ = ZONA_HORARIA;
 
 if (!process.env.JWT_SECRET) {
   throw new Error("Falta JWT_SECRET en el archivo .env");
@@ -58,6 +64,26 @@ app.use("/api/perfil", perfilRoutes);
 app.use("/api/clientes", clientesAccesoRoutes);
 app.use("/api/uploads", express.static(RAIZ_SUBIDAS, { maxAge: "30d", immutable: true, index: false }));
 app.use("/api/imagenes", imagenesRoutes);
+
+// Una ruta /api que no existe responde JSON, no la página del cliente
+app.use("/api", (req, res) => {
+  res.status(404).json({ ok: false, mensaje: "Ruta no encontrada" });
+});
+
+// En producción el mismo servidor entrega el cliente ya compilado (client/dist):
+// un solo enlace, sin CORS. En desarrollo no existe dist y lo sirve Vite.
+const aqui = path.dirname(fileURLToPath(import.meta.url));
+const CARPETA_CLIENTE = path.resolve(aqui, "../../client/dist");
+
+if (fs.existsSync(path.join(CARPETA_CLIENTE, "index.html"))) {
+  app.use(express.static(CARPETA_CLIENTE, { index: false, maxAge: "1h" }));
+  // Cualquier otra ruta la resuelve React Router
+  // (un archivo con extensión que no existe, como /assets/x.js, es un 404 real)
+  app.get("/{*ruta}", (req, res) => {
+    if (path.extname(req.path)) return res.status(404).end();
+    res.sendFile(path.join(CARPETA_CLIENTE, "index.html"));
+  });
+}
 
 const PORT = process.env.PORT || 3000;
 

@@ -1,4 +1,5 @@
 import { pool } from "../config/db.js";
+import { esSubidaPropia } from "../utils/urlsSubidas.js";
 
 const TIPOS_VARIANTE = ["Color", "Talla", "Modelo"];
 const MAX_PRECIO = 1000000;
@@ -56,7 +57,7 @@ const validarProducto = (d = {}) => {
   if (!TIPOS_VARIANTE.includes(d.tipo_variante)) {
     return { error: "El tipo de variante no es válido" };
   }
-    const esSubida = /^\/api\/uploads\/productos\/[0-9a-f-]{36}\.webp$/i.test(imagen);
+  const esSubida = esSubidaPropia(imagen, "productos");
   if (imagen && !esSubida && (!/^https?:\/\//i.test(imagen) || imagen.length > 500)) {
     return { error: "La imagen no es válida" };
   }
