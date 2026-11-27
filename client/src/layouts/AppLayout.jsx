@@ -8,6 +8,7 @@ import logo from "../assets/branding/logo-amari-cuadrado.png";
 import { useCarrito } from "../hooks/useCarrito";
 import { obtenerPerfil } from "../services/auth.service";
 import { getContadorNotificaciones } from "../services/notificaciones.service";
+import NavInferior from "../components/NavInferior";
 
 const ETIQUETA_ROL = { admin: "Admin", empleado: "Empleado", cliente: "Cliente" };
 const RUTA_NOTIFICACIONES_CLIENTE = "/cliente/notificaciones";
@@ -36,6 +37,13 @@ function AppLayout() {
   const apellidos = perfil?.apellidos ?? usuario.apellidos;
   const iniciales = `${nombre[0] ?? ""}${apellidos[0] ?? ""}`.toUpperCase();
   const rutaConfiguracion = `${rutaPorRol(usuario.rol)}/configuracion`;
+
+  // Barra de abajo (celular, solo clienta): los primeros 5 accesos del menú, con sus avisos
+  const accesosInferiores = menu.slice(0, 5).map((m) => ({
+    ...m,
+    cuenta:
+      m.insignia === "carrito" ? enCarrito : m.to === RUTA_NOTIFICACIONES_CLIENTE ? noLeidas : 0,
+  }));
 
   const cerrarMenu = () => setAbierto(false);
 
@@ -200,10 +208,15 @@ function AppLayout() {
               recargarPerfil: () => setVersion((v) => v + 1),
               recargarContador: () => setVersionContador((v) => v + 1),
               debeCambiarClave: Boolean(perfil?.debe_cambiar_clave),
+              noLeidas,
             }}
           />
+          {/* Deja libre el espacio de la barra de abajo en celular */}
+          {esCliente && <div aria-hidden className="h-20 lg:hidden" />}
         </main>
       </div>
+
+      {esCliente && <NavInferior items={accesosInferiores} />}
     </div>
   );
 }

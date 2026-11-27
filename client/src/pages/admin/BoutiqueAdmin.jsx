@@ -1,16 +1,10 @@
 import { useEffect, useState } from "react";
 import { Plus, Pencil, ShoppingBag, TriangleAlert } from "lucide-react";
+import FotoProducto from "../../components/FotoProducto";
 import { getProductosGestion } from "../../services/productos.service";
 import ModalProducto from "../../components/ModalProducto";
 import { STOCK_BAJO } from "../../config/boutique";
 import { formatearMoneda } from "../../utils/formato";
-
-const chip = (activo) =>
-  `rounded-full border px-4 py-1.5 text-sm font-medium transition ${
-    activo
-      ? "border-transparent bg-linear-to-r from-amari-primario to-amari-primario-oscuro text-white shadow-md shadow-amari-primario/30"
-      : "border-amari-borde bg-white text-amari-primario hover:bg-amari-bg-soft"
-  }`;
 
 const claseStock = (stock) =>
   stock <= 0
@@ -72,7 +66,7 @@ function BoutiqueAdmin() {
         <button
           onClick={() => setModal({ producto: null })}
           disabled={cargando || Boolean(error)}
-          className="btn-primario"
+          className="btn-primario px-6"
         >
           <Plus size={18} /> Nuevo producto
         </button>
@@ -87,11 +81,18 @@ function BoutiqueAdmin() {
             <div className="mb-6 flex flex-wrap gap-2">
               {categorias.length > 1 && (
                 <>
-                  <button onClick={() => setCategoria(null)} className={chip(categoria === null)}>
+                  <button
+                    onClick={() => setCategoria(null)}
+                    className={`chip ${categoria === null ? "chip-activo" : ""}`}
+                  >
                     ✨ Todos
                   </button>
                   {categorias.map((c) => (
-                    <button key={c} onClick={() => setCategoria(c)} className={chip(categoria === c)}>
+                    <button
+                      key={c}
+                      onClick={() => setCategoria(c)}
+                      className={`chip ${categoria === c ? "chip-activo" : ""}`}
+                    >
                       {c}
                     </button>
                   ))}
@@ -101,7 +102,7 @@ function BoutiqueAdmin() {
               {cantidadBajo > 0 && (
                 <button
                   onClick={() => setSoloBajo((v) => !v)}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-sm font-medium transition ${
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
                     soloBajo
                       ? "border-transparent bg-amber-500 text-white shadow-md shadow-amber-500/30"
                       : "border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100"
@@ -114,38 +115,30 @@ function BoutiqueAdmin() {
           )}
 
           {visibles.length === 0 ? (
-            <p className="tarjeta p-10 text-center text-sm text-amari-acento">
+            <div className="vacio text-sm">
+              <ShoppingBag size={30} className="text-amari-acento" />
               {productos.length === 0
                 ? 'Aún no hay productos. Crea el primero con "Nuevo producto".'
                 : "No hay productos con ese filtro."}
-            </p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {visibles.map((p) => (
                 <article
                   key={p.id}
-                  className={`tarjeta min-w-0 overflow-hidden ${p.activo ? "" : "opacity-60"}`}
+                  className={`tarjeta min-w-0 overflow-hidden transition hover:-translate-y-0.5 hover:shadow-xl ${
+                    p.activo ? "" : "opacity-60"
+                  }`}
                 >
-                  <div className="relative flex h-44 items-center justify-center bg-amari-bg-soft sm:h-48">
-                    {p.imagen_url ? (
-                      <img
-                        src={p.imagen_url}
-                        alt={p.nombre}
-                        className="absolute inset-0 h-full w-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = "none";
-                        }}
-                      />
-                    ) : null}
-                    <ShoppingBag size={44} className="text-amari-borde" />
-                    <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-semibold text-amari-primario-oscuro">
+                  <FotoProducto url={p.imagen_url} nombre={p.nombre}>
+                    <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-amari-primario-oscuro shadow-sm">
                       {p.categoria}
                     </span>
-                  </div>
+                  </FotoProducto>
 
-                  <div className="p-4">
+                  <div className="p-5">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="break-words font-semibold leading-snug text-amari-titulo">
+                      <h3 className="break-words font-bold leading-snug text-amari-titulo">
                         {p.nombre}
                         {!p.activo && (
                           <span className="ml-2 text-xs font-normal text-amari-acento">
@@ -156,9 +149,9 @@ function BoutiqueAdmin() {
                       <button
                         onClick={() => setModal({ producto: p })}
                         aria-label={`Editar ${p.nombre}`}
-                        className="shrink-0 rounded-lg p-1.5 text-amari-acento hover:bg-amari-bg-soft"
+                        className="shrink-0 rounded-xl p-2 text-amari-primario-oscuro transition hover:bg-pink-50"
                       >
-                        <Pencil size={16} />
+                        <Pencil size={17} />
                       </button>
                     </div>
 
@@ -169,7 +162,7 @@ function BoutiqueAdmin() {
                       {p.variantes.map((v) => (
                         <span
                           key={v.id}
-                          className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${claseStock(v.stock)}`}
+                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${claseStock(v.stock)}`}
                         >
                           {v.nombre} · {v.stock}
                         </span>

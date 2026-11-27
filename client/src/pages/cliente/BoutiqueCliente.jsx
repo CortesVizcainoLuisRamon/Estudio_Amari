@@ -1,20 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingBag, ShoppingCart, Check, Search } from "lucide-react";
+import FotoProducto from "../../components/FotoProducto";
 import { getCatalogo } from "../../services/productos.service";
 import { useCarrito } from "../../hooks/useCarrito";
 import { STOCK_BAJO } from "../../config/boutique";
-import { formatearMoneda } from "../../utils/formato";
-
-const chip = (activo) =>
-  `rounded-full border px-4 py-1.5 text-sm font-medium transition ${
-    activo
-      ? "border-transparent bg-linear-to-r from-amari-primario to-amari-primario-oscuro text-white shadow-md shadow-amari-primario/30"
-      : "border-amari-borde bg-white text-amari-primario hover:bg-amari-bg-soft"
-  }`;
-
-const normalizar = (t) =>
-  (t ?? "").toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+import { formatearMoneda, normalizarTexto as normalizar } from "../../utils/formato";
 
 const estaAgotado = (producto) => producto.variantes.every((v) => v.stock <= 0);
 
@@ -34,33 +25,20 @@ function TarjetaProducto({ producto }) {
   };
 
   return (
-    <article className="tarjeta flex min-w-0 flex-col overflow-hidden">
-      <div className="relative flex h-44 items-center justify-center bg-amari-bg-soft sm:h-48">
-        {producto.imagen_url ? (
-          <img
-            src={producto.imagen_url}
-            alt={producto.nombre}
-            className={`absolute inset-0 h-full w-full object-cover ${
-              agotado ? "opacity-70 grayscale" : ""
-            }`}
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }}
-          />
-        ) : null}
-        <ShoppingBag size={44} className="text-amari-borde" />
-        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-semibold text-amari-primario-oscuro">
+    <article className="tarjeta flex min-w-0 flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-xl">
+      <FotoProducto url={producto.imagen_url} nombre={producto.nombre} atenuada={agotado}>
+        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-amari-primario-oscuro shadow-sm">
           {producto.categoria}
         </span>
         {agotado && (
-          <span className="absolute right-3 top-3 rounded-full bg-red-600 px-2.5 py-0.5 text-[11px] font-bold text-white shadow">
+          <span className="absolute right-3 top-3 rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-bold text-white shadow">
             Agotado
           </span>
         )}
-      </div>
+      </FotoProducto>
 
-      <div className="flex flex-1 flex-col p-4">
-        <h3 className="break-words font-semibold leading-snug text-amari-titulo">
+      <div className="flex flex-1 flex-col p-5">
+        <h3 className="break-words font-bold leading-snug text-amari-titulo">
           {producto.nombre}
         </h3>
         {producto.descripcion && (
@@ -79,7 +57,7 @@ function TarjetaProducto({ producto }) {
               onClick={() => setEleccion(v.id)}
               className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
                 v.id === eleccion
-                  ? "border-transparent bg-amari-primario text-white"
+                  ? "border-transparent bg-amari-primario text-white shadow-md shadow-amari-primario/30"
                   : v.stock <= 0
                     ? "border-amari-borde text-amari-borde line-through"
                     : "border-amari-borde bg-white text-amari-primario hover:bg-amari-bg-soft"
@@ -176,7 +154,7 @@ function BoutiqueCliente() {
           <p className="mt-1 text-sm text-amari-acento">Ropa, tenis y accesorios disponibles</p>
         </div>
 
-        <Link to="/cliente/carrito" className="btn-primario relative">
+        <Link to="/cliente/carrito" className="btn-primario relative px-6">
           <ShoppingCart size={18} /> Mi carrito
           {cantidad > 0 && (
             <span className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-white px-1.5 text-xs font-bold text-amari-primario shadow ring-1 ring-amari-primario/30">
@@ -203,7 +181,7 @@ function BoutiqueCliente() {
                 onChange={(e) => setBusqueda(e.target.value)}
                 placeholder="Buscar en la boutique..."
                 aria-label="Buscar productos"
-                className="w-full rounded-full border border-amari-borde bg-white py-2.5 pl-11 pr-4 text-sm text-amari-titulo placeholder:text-amari-acento/60 focus:border-amari-primario focus:outline-none focus:ring-2 focus:ring-amari-primario/20"
+                className="entrada rounded-full pl-11 shadow-sm"
               />
             </div>
 
@@ -211,7 +189,7 @@ function BoutiqueCliente() {
               value={orden}
               onChange={(e) => setOrden(e.target.value)}
               aria-label="Ordenar productos"
-              className="rounded-full border border-amari-borde bg-white px-4 py-2.5 text-sm text-amari-titulo focus:border-amari-primario focus:outline-none focus:ring-2 focus:ring-amari-primario/20"
+              className="entrada w-auto rounded-full pr-8 shadow-sm"
             >
               <option value="catalogo">Orden del catálogo</option>
               <option value="menor">Precio: menor a mayor</option>
@@ -221,11 +199,18 @@ function BoutiqueCliente() {
 
           {categorias.length > 1 && (
             <div className="mb-6 flex flex-wrap gap-2">
-              <button onClick={() => setCategoria(null)} className={chip(categoria === null)}>
+              <button
+                onClick={() => setCategoria(null)}
+                className={`chip ${categoria === null ? "chip-activo" : ""}`}
+              >
                 ✨ Todos
               </button>
               {categorias.map((c) => (
-                <button key={c} onClick={() => setCategoria(c)} className={chip(categoria === c)}>
+                <button
+                  key={c}
+                  onClick={() => setCategoria(c)}
+                  className={`chip ${categoria === c ? "chip-activo" : ""}`}
+                >
                   {c}
                 </button>
               ))}
@@ -233,11 +218,12 @@ function BoutiqueCliente() {
           )}
 
           {visibles.length === 0 ? (
-            <p className="tarjeta p-10 text-center text-sm text-amari-acento">
+            <div className="vacio text-sm">
+              <ShoppingBag size={30} className="text-amari-acento" />
               {productos.length === 0
                 ? "Por ahora no hay productos disponibles."
                 : "No se encontraron productos con esa búsqueda."}
-            </p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {visibles.map((p) => (

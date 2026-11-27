@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { Lock, Mail, Phone, ShieldCheck, Sparkles } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { rutaPorRol } from "../../routes/rutaPorRol";
 import AuthLayout from "../../components/AuthLayout";
@@ -68,6 +68,7 @@ function Registro() {
           name="email"
           type="email"
           etiqueta="Correo electrónico"
+          icono={Mail}
           placeholder="tu@correo.com"
           autoComplete="email"
           required
@@ -78,7 +79,8 @@ function Registro() {
           id="telefono"
           name="telefono"
           type="tel"
-          etiqueta="Teléfono (opcional)"
+          etiqueta="Teléfono"
+          icono={Phone}
           value={form.telefono}
           onChange={cambiar}
         />
@@ -87,6 +89,7 @@ function Registro() {
           name="password"
           type="password"
           etiqueta="Contraseña (mínimo 8 caracteres)"
+          icono={Lock}
           autoComplete="new-password"
           required
           minLength={8}
@@ -98,14 +101,15 @@ function Registro() {
           name="confirmar"
           type="password"
           etiqueta="Confirmar contraseña"
+          icono={ShieldCheck}
           autoComplete="new-password"
           required
           value={form.confirmar}
           onChange={cambiar}
         />
 
-        <button type="submit" disabled={enviando} className="btn-primario w-full py-3">
-          <Sparkles size={16} />
+        <button type="submit" disabled={enviando} className="btn-primario w-full py-3.5 text-base">
+          <Sparkles size={18} />
           {enviando ? "Creando cuenta..." : "Crear cuenta"}
         </button>
       </form>

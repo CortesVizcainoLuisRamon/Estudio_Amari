@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarCheck, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { getCitas, cambiarEstado } from "../../services/citas.service";
 import ModalCita from "../../components/ModalCita";
 import DetalleCita from "../../components/DetalleCita";
+import FilaCita from "../../components/FilaCita";
 import { ESTADOS_CITA } from "../../config/citas";
 import {
   aTexto,
@@ -17,9 +18,6 @@ import {
 
 const DIAS_PROXIMAS = 60;
 
-const botonNav =
-  "flex items-center justify-center rounded-full border border-amari-borde bg-white px-3 py-1.5 text-sm font-medium text-amari-primario hover:bg-amari-bg-soft";
-
 const dos = (n) => String(n).padStart(2, "0");
 
 const textoAhora = () => {
@@ -28,21 +26,14 @@ const textoAhora = () => {
 };
 
 const claseVista = (activa) =>
-  `rounded-full px-4 py-1.5 text-sm font-semibold transition ${
+  `rounded-full px-5 py-1.5 text-sm font-semibold transition ${
     activa
-      ? "bg-amari-primario text-white shadow-sm"
-      : "text-amari-primario hover:bg-amari-bg-soft"
-  }`;
-
-const claseFiltro = (activo) =>
-  `rounded-full border px-3 py-1 text-xs font-semibold transition ${
-    activo
-      ? "border-transparent bg-amari-titulo text-white"
-      : "border-amari-borde bg-white text-amari-primario-oscuro hover:bg-amari-bg-soft"
+      ? "bg-linear-to-r from-amari-primario to-amari-primario-oscuro text-white shadow-md shadow-amari-primario/30"
+      : "text-amari-primario-oscuro hover:bg-amari-bg-soft"
   }`;
 
 function AgendaAdmin() {
-    const [params] = useSearchParams();
+  const [params] = useSearchParams();
   const [vista, setVista] = useState("proximas");
   const [filtro, setFiltro] = useState(
     params.get("filtro") === "pendientes" ? "pendientes" : "todas"
@@ -130,13 +121,13 @@ function AgendaAdmin() {
             {esSemana ? rangoSemana(lunes) : `Próximos ${DIAS_PROXIMAS} días`}
           </p>
         </div>
-        <button onClick={() => setModalNueva(true)} className="btn-primario">
+        <button onClick={() => setModalNueva(true)} className="btn-primario px-6">
           <Plus size={18} /> Nueva cita
         </button>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-full border border-amari-borde bg-white p-1">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="inline-flex rounded-full border border-amari-borde bg-white p-1 shadow-sm">
           <button onClick={() => setVista("proximas")} className={claseVista(!esSemana)}>
             Próximas
           </button>
@@ -150,17 +141,17 @@ function AgendaAdmin() {
             <button
               onClick={() => setLunes(sumarDias(lunes, -7))}
               aria-label="Semana anterior"
-              className={botonNav}
+              className="chip px-3"
             >
               <ChevronLeft size={16} />
             </button>
-            <button onClick={() => setLunes(inicioSemana(new Date()))} className={botonNav}>
+            <button onClick={() => setLunes(inicioSemana(new Date()))} className="chip">
               Hoy
             </button>
             <button
               onClick={() => setLunes(sumarDias(lunes, 7))}
               aria-label="Semana siguiente"
-              className={botonNav}
+              className="chip px-3"
             >
               <ChevronRight size={16} />
             </button>
@@ -169,12 +160,15 @@ function AgendaAdmin() {
 
         {!esSemana && !cargando && !error && (
           <div className="flex gap-2">
-            <button onClick={() => setFiltro("todas")} className={claseFiltro(filtro === "todas")}>
+            <button
+              onClick={() => setFiltro("todas")}
+              className={`chip ${filtro === "todas" ? "chip-activo" : ""}`}
+            >
               Todas ({proximas.length})
             </button>
             <button
               onClick={() => setFiltro("pendientes")}
-              className={claseFiltro(filtro === "pendientes")}
+              className={`chip ${filtro === "pendientes" ? "chip-activo" : ""}`}
             >
               Por confirmar ({porConfirmar.length})
             </button>
@@ -193,68 +187,48 @@ function AgendaAdmin() {
       {!esSemana && !cargando && !error && (
         <>
           {visibles.length === 0 ? (
-            <div className="tarjeta px-6 py-10 text-center text-amari-texto">
+            <div className="vacio text-amari-texto">
+              <CalendarCheck size={30} className="text-amari-acento" />
               {filtro === "pendientes"
                 ? "No hay citas por confirmar. ¡Todo al día!"
                 : "No hay citas próximas."}
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-5">
               {Object.entries(porDia).map(([dia, lista]) => (
-                <section key={dia}>
-                  <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-amari-titulo">
+                <section key={dia} className="tarjeta p-4 sm:p-5">
+                  <h2 className="mb-2 flex flex-wrap items-center gap-2.5 px-2 font-display text-lg font-semibold text-amari-titulo">
                     {etiquetaDia(dia) && (
-                      <span className="rounded-full bg-amari-primario px-2.5 py-0.5 text-xs text-white">
+                      <span className="rounded-full bg-linear-to-r from-amari-primario to-amari-primario-oscuro px-3 py-1 font-sans text-xs font-bold text-white">
                         {etiquetaDia(dia)}
                       </span>
                     )}
                     {fechaLarga(dia)}
+                    <span className="font-sans text-sm font-normal text-amari-acento">
+                      · {lista.length} {lista.length === 1 ? "cita" : "citas"}
+                    </span>
                   </h2>
 
-                  <div className="space-y-2">
-                    {lista.map((c) => {
-                      const estado = ESTADOS_CITA[c.estado];
-
-                      return (
-                        <div
-                          key={c.id}
-                          style={{ borderLeftColor: c.color }}
-                          className="tarjeta flex items-stretch border-l-4"
-                        >
-                          <button
-                            onClick={() => setSeleccionada(c)}
-                            className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-1 p-3 text-left text-sm hover:bg-amari-bg-soft"
-                          >
-                            <span className="w-24 shrink-0 font-semibold text-amari-titulo">
-                              {horaDe(c.inicio)} – {horaDe(c.fin)}
-                            </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="block truncate font-medium text-amari-titulo">
-                                {c.cliente}
-                              </span>
-                              <span className="block truncate text-xs text-amari-acento">
-                                {c.servicios.map((s) => s.nombre).join(", ")} · {c.empleada}
-                              </span>
-                            </span>
-                            <span
-                              className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${estado.clase}`}
-                            >
-                              {estado.texto}
-                            </span>
-                          </button>
-
-                          {c.estado === "pendiente" && (
+                  <div className="space-y-1">
+                    {lista.map((c) => (
+                      <FilaCita
+                        key={c.id}
+                        cita={c}
+                        mostrarEmpleada
+                        onSeleccionar={setSeleccionada}
+                        accion={
+                          c.estado === "pendiente" && (
                             <button
                               onClick={() => confirmarRapido(c)}
                               disabled={confirmando === c.id}
-                              className="m-2 shrink-0 self-center rounded-full bg-amari-primario px-4 py-1.5 text-xs font-semibold text-white hover:bg-amari-primario-oscuro disabled:opacity-60"
+                              className="btn-primario px-4 py-1.5 text-xs"
                             >
                               {confirmando === c.id ? "..." : "Confirmar"}
                             </button>
-                          )}
-                        </div>
-                      );
-                    })}
+                          )
+                        }
+                      />
+                    ))}
                   </div>
                 </section>
               ))}
@@ -285,8 +259,10 @@ function AgendaAdmin() {
                     {dia.toLocaleDateString("es-MX", { weekday: "short" }).replace(".", "")}
                   </p>
                   <p
-                    className={`font-display text-xl font-semibold ${
-                      esHoy ? "text-amari-primario" : "text-amari-titulo"
+                    className={`mx-auto mt-0.5 flex h-9 w-9 items-center justify-center rounded-full font-display text-xl font-semibold ${
+                      esHoy
+                        ? "bg-linear-to-br from-amari-primario to-amari-primario-oscuro text-white shadow-md shadow-amari-primario/30"
+                        : "text-amari-titulo"
                     }`}
                   >
                     {dia.getDate()}
@@ -305,7 +281,7 @@ function AgendaAdmin() {
                         key={c.id}
                         onClick={() => setSeleccionada(c)}
                         style={{ borderLeftColor: c.color }}
-                        className={`w-full rounded-lg border border-amari-borde border-l-4 bg-white p-2 text-left text-xs shadow-sm transition hover:shadow-md ${
+                        className={`w-full rounded-xl border border-amari-borde border-l-4 bg-white p-2.5 text-left text-xs shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
                           inactiva ? "opacity-50" : ""
                         }`}
                       >

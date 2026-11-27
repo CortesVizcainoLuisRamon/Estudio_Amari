@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil } from "lucide-react";
+import { Clock, Plus, Pencil, Scissors } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { getServiciosGestion, getCategorias } from "../../services/servicios.service";
 import { iconoCategoria } from "../../config/categorias";
@@ -14,13 +14,6 @@ const formatearPrecio = (s) => {
   });
   return s.precio_desde ? `Desde ${monto}` : monto;
 };
-
-const chip = (activo) =>
-  `rounded-full border px-4 py-1.5 text-sm font-medium transition ${
-    activo
-      ? "border-transparent bg-linear-to-r from-amari-primario to-amari-primario-oscuro text-white shadow-md shadow-amari-primario/30"
-      : "border-amari-borde bg-white text-amari-primario hover:bg-amari-bg-soft"
-  }`;
 
 function ServiciosAdmin() {
   const { usuario } = useAuth();
@@ -84,7 +77,7 @@ function ServiciosAdmin() {
           <button
             onClick={() => setModal({ servicio: null })}
             disabled={cargando || Boolean(error)}
-            className="btn-primario"
+            className="btn-primario px-6"
           >
             <Plus size={18} /> Nuevo servicio
           </button>
@@ -97,33 +90,40 @@ function ServiciosAdmin() {
       {!cargando && !error && (
         <>
           <div className="mb-6 flex flex-wrap gap-2">
-            <button onClick={() => setFiltro(null)} className={chip(filtro === null)}>
+            <button onClick={() => setFiltro(null)} className={`chip ${filtro === null ? "chip-activo" : ""}`}>
               ✨ Todos
             </button>
             {categorias.map((c) => (
-              <button key={c.id} onClick={() => setFiltro(c.id)} className={chip(filtro === c.id)}>
+              <button
+                key={c.id}
+                onClick={() => setFiltro(c.id)}
+                className={`chip ${filtro === c.id ? "chip-activo" : ""}`}
+              >
                 {iconoCategoria(c.nombre)} {c.nombre}
               </button>
             ))}
           </div>
 
           {visibles.length === 0 ? (
-            <p className="tarjeta p-10 text-center text-sm text-amari-acento">
+            <div className="vacio text-sm">
+              <Scissors size={30} className="text-amari-acento" />
               No hay servicios en esta categoría.
-            </p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {visibles.map((s) => (
                 <article
                   key={s.id}
-                  className={`tarjeta group min-w-0 p-4 transition hover:shadow-md ${
+                  className={`tarjeta group flex min-w-0 flex-col p-5 transition hover:-translate-y-0.5 hover:shadow-xl ${
                     s.activo ? "" : "opacity-60"
                   }`}
                 >
-                  <div className="flex items-start gap-3">
-                    <span className="shrink-0 text-xl">{iconoCategoria(s.categoria)}</span>
+                  <div className="flex items-start gap-3.5">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-pink-50 text-xl">
+                      {iconoCategoria(s.categoria)}
+                    </span>
                     <div className="min-w-0 flex-1">
-                      <h3 className="break-words font-semibold leading-snug text-amari-titulo">
+                      <h3 className="break-words font-bold leading-snug text-amari-titulo">
                         {s.nombre}
                       </h3>
                       <p className="text-xs text-amari-acento">
@@ -135,15 +135,17 @@ function ServiciosAdmin() {
                       <button
                         onClick={() => setModal({ servicio: s })}
                         aria-label={`Editar ${s.nombre}`}
-                        className="shrink-0 rounded-lg p-1.5 text-amari-acento transition hover:bg-amari-bg-soft focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                        className="shrink-0 rounded-xl p-2 text-amari-primario-oscuro transition hover:bg-pink-50 focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                       >
-                        <Pencil size={16} />
+                        <Pencil size={17} />
                       </button>
                     )}
                   </div>
-                  <div className="mt-4 flex items-end justify-between gap-3">
-                    <span className="shrink-0 text-xs text-amari-acento">{s.duracion_min} min</span>
-                    <span className="text-right font-display text-xl font-semibold text-amari-titulo">
+                  <div className="mt-4 flex items-end justify-between gap-3 border-t border-amari-borde/60 pt-4">
+                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amari-bg-soft px-3 py-1 text-xs font-semibold text-amari-primario-oscuro">
+                      <Clock size={13} /> {s.duracion_min} min
+                    </span>
+                    <span className="text-right font-display text-2xl font-semibold text-amari-titulo">
                       {formatearPrecio(s)}
                     </span>
                   </div>

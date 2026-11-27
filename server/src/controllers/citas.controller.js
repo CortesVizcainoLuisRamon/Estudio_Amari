@@ -510,7 +510,7 @@ export const obtenerMiPerfil = async (req, res) => {
 
 // ---------- Fidelidad: 5 visitas completadas = 6º servicio gratis ----------
 
-const calcularFidelidad = async (conexion, clienteId) => {
+ export const calcularFidelidad = async (conexion, clienteId) => {
   const [filas] = await conexion.query(
     `SELECT COALESCE(SUM(canje_fidelidad = FALSE), 0) AS normales,
             COALESCE(SUM(canje_fidelidad = TRUE), 0) AS canjes

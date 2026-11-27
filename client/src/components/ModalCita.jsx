@@ -18,7 +18,7 @@ import {
 const PASOS = ["Cliente", "Servicio", "Especialista", "Fecha y hora"];
 
 const claseOpcion = (activa) =>
-  `flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${
+  `flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${
     activa
       ? "border-amari-primario bg-amari-bg-soft"
       : "border-amari-borde bg-white hover:bg-amari-bg-soft"
@@ -181,15 +181,17 @@ function ModalCita({ onCerrar, onGuardado }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-amari-titulo/40 p-4 backdrop-blur-sm">
       <div className="tarjeta flex max-h-[90vh] w-full max-w-xl flex-col">
         <div className="flex items-center justify-between border-b border-amari-borde px-6 py-4">
-          <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-amari-titulo">
-            <Flower2 size={18} className="text-amari-primario" />
+          <h2 className="flex items-center gap-3 font-display text-xl font-semibold text-amari-titulo">
+            <span className="icono-tarjeta h-9 w-9">
+              <Flower2 size={18} />
+            </span>
             Nueva Cita
           </h2>
           <button
             type="button"
             onClick={onCerrar}
             aria-label="Cerrar"
-            className="text-amari-acento hover:text-amari-primario-oscuro"
+            className="rounded-full p-1.5 text-amari-acento transition hover:bg-pink-50 hover:text-amari-primario-oscuro"
           >
             <X size={20} />
           </button>
@@ -234,7 +236,7 @@ function ModalCita({ onCerrar, onGuardado }) {
                   onChange={(e) => setBusqueda(e.target.value)}
                   placeholder="Buscar por nombre o teléfono..."
                   aria-label="Buscar cliente"
-                  className="w-full rounded-full border border-amari-borde py-2 pl-9 pr-4 text-sm text-amari-titulo focus:border-amari-primario focus:outline-none focus:ring-2 focus:ring-amari-primario/20"
+                  className="entrada rounded-full py-2.5 pl-10"
                 />
               </div>
 
@@ -246,7 +248,7 @@ function ModalCita({ onCerrar, onGuardado }) {
                     onClick={() => setClienteId(c.id)}
                     className={claseOpcion(c.id === clienteId)}
                   >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amari-bg-soft text-xs font-bold text-amari-primario">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-amari-bg-soft text-xs font-bold text-amari-primario">
                       {`${c.nombre?.[0] ?? ""}${c.apellidos?.[0] ?? ""}`.toUpperCase()}
                     </span>
                     <span className="min-w-0 flex-1">
@@ -285,7 +287,7 @@ function ModalCita({ onCerrar, onGuardado }) {
               </p>
               {Object.entries(serviciosPorCategoria).map(([categoria, lista]) => (
                 <div key={categoria} className="mb-4">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-amari-acento">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-wider text-amari-acento">
                     {categoria}
                   </p>
                   <div className="space-y-2">
@@ -323,7 +325,7 @@ function ModalCita({ onCerrar, onGuardado }) {
             <>
               <p className="mb-3 font-semibold text-amari-titulo">¿Quién realizará el servicio?</p>
               {especialistas.length === 0 ? (
-                <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
                   Ninguna especialista realiza todos los servicios elegidos. Regresa y elige menos
                   servicios, o asígnalos a una empleada desde la sección Empleadas.
                 </p>
@@ -337,7 +339,7 @@ function ModalCita({ onCerrar, onGuardado }) {
                       className={claseOpcion(e.id === empleadoId)}
                     >
                       <span
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-bold text-white"
                         style={{ backgroundColor: e.color }}
                       >
                         {`${e.nombre[0]}${e.apellidos[0]}`.toUpperCase()}
@@ -376,7 +378,7 @@ function ModalCita({ onCerrar, onGuardado }) {
 
               {fecha && (
                 <>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-amari-primario">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-wider text-amari-primario">
                     Horarios disponibles con {especialista?.nombre}
                   </p>
                   {buscando && <p className="text-sm text-amari-primario">Buscando horarios...</p>}
@@ -384,7 +386,7 @@ function ModalCita({ onCerrar, onGuardado }) {
                     <p className="text-sm text-red-600">No se pudo consultar la disponibilidad.</p>
                   )}
                   {dispActual && !dispActual.error && horasLibres.length === 0 && (
-                    <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                    <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
                       No hay horarios disponibles ese día. Prueba con otra fecha.
                     </p>
                   )}
@@ -395,7 +397,7 @@ function ModalCita({ onCerrar, onGuardado }) {
                           key={h}
                           type="button"
                           onClick={() => setHora(h)}
-                          className={`rounded-xl border py-2 text-sm font-medium transition ${
+                          className={`rounded-2xl border py-2 text-sm font-medium transition ${
                             h === hora
                               ? "border-transparent bg-amari-primario text-white"
                               : "border-amari-borde bg-white text-amari-primario hover:bg-amari-bg-soft"
@@ -410,7 +412,7 @@ function ModalCita({ onCerrar, onGuardado }) {
               )}
 
               {horaValida && (
-                <div className="mt-4 rounded-xl bg-amari-bg-soft p-3 text-sm text-amari-titulo">
+                <div className="mt-4 rounded-2xl bg-amari-bg-soft p-3 text-sm text-amari-titulo">
                   <p className="font-semibold">{fechaLarga(fecha)}</p>
                   <p>
                     {hora} a {horaMasMinutos(hora, duracionTotal)} · {cliente?.nombre}{" "}
@@ -422,7 +424,7 @@ function ModalCita({ onCerrar, onGuardado }) {
               <div className="mt-4">
                 <label
                   htmlFor="notas"
-                  className="mb-1 block text-xs font-semibold uppercase tracking-wide text-amari-primario"
+                  className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-amari-primario"
                 >
                   Notas (opcional)
                 </label>
@@ -432,7 +434,7 @@ function ModalCita({ onCerrar, onGuardado }) {
                   maxLength={500}
                   value={notas}
                   onChange={(e) => setNotas(e.target.value)}
-                  className="w-full rounded-xl border border-amari-borde px-4 py-2.5 text-sm text-amari-titulo focus:border-amari-primario focus:outline-none focus:ring-2 focus:ring-amari-primario/20"
+                  className="entrada"
                 />
               </div>
             </>
@@ -449,7 +451,7 @@ function ModalCita({ onCerrar, onGuardado }) {
           )}
 
           {error && (
-            <p className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+            <p className="mb-3 rounded-2xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
           )}
 
           <div className="grid grid-cols-2 gap-3">
@@ -457,7 +459,7 @@ function ModalCita({ onCerrar, onGuardado }) {
               type="button"
               onClick={retroceder}
               disabled={enviando}
-              className="rounded-full border border-amari-borde px-5 py-2.5 text-sm font-semibold text-amari-primario-oscuro hover:bg-amari-bg-soft disabled:opacity-60"
+              className="btn-secundario"
             >
               {paso === 0 ? "Cancelar" : "← Atrás"}
             </button>

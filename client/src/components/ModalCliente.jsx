@@ -52,15 +52,17 @@ function ModalCliente({ cliente, onCerrar, onGuardado }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-amari-borde px-6 py-4">
-          <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-amari-titulo">
-            <Flower2 size={18} className="text-amari-primario" />
+          <h2 className="flex items-center gap-3 font-display text-xl font-semibold text-amari-titulo">
+            <span className="icono-tarjeta h-9 w-9">
+              <Flower2 size={18} />
+            </span>
             {editando ? "Editar Cliente" : "Nuevo Cliente"}
           </h2>
           <button
             type="button"
             onClick={onCerrar}
             aria-label="Cerrar"
-            className="text-amari-acento hover:text-amari-primario-oscuro"
+            className="rounded-full p-1.5 text-amari-acento transition hover:bg-pink-50 hover:text-amari-primario-oscuro"
           >
             <X size={20} />
           </button>
@@ -68,7 +70,7 @@ function ModalCliente({ cliente, onCerrar, onGuardado }) {
 
         <form onSubmit={enviar} className="px-6 py-5">
           {error && (
-            <p className="mb-4 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+            <p className="mb-4 rounded-2xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
           )}
 
           <div className="grid gap-x-4 sm:grid-cols-2">
@@ -91,7 +93,7 @@ function ModalCliente({ cliente, onCerrar, onGuardado }) {
             <button
               type="button"
               onClick={onCerrar}
-              className="rounded-full border border-amari-borde px-5 py-2.5 text-sm font-semibold text-amari-primario-oscuro hover:bg-amari-bg-soft"
+              className="btn-secundario"
             >
               Cancelar
             </button>

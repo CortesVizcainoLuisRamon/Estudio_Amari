@@ -6,11 +6,10 @@ import { crearProducto, actualizarProducto } from "../services/productos.service
 import { subirImagenProducto } from "../services/imagenes.service";
 import { CATEGORIAS_PRODUCTO, TIPOS_VARIANTE } from "../config/boutique";
 
-const claseSelect =
-  "w-full rounded-xl border border-amari-borde bg-white px-4 py-2.5 text-sm text-amari-titulo focus:border-amari-primario focus:outline-none focus:ring-2 focus:ring-amari-primario/20";
-const claseEtiqueta = "mb-1 block text-xs font-semibold uppercase tracking-wide text-amari-primario";
+const claseSelect = "entrada";
+const claseEtiqueta = "mb-1.5 block text-xs font-bold uppercase tracking-wider text-amari-primario";
 const claseEntrada =
-  "rounded-xl border border-amari-borde px-3 py-2 text-sm text-amari-titulo focus:border-amari-primario focus:outline-none focus:ring-2 focus:ring-amari-primario/20";
+  "entrada w-auto px-3 py-2";
 
 function ModalProducto({ producto, onCerrar, onGuardado }) {
   const editando = Boolean(producto);
@@ -75,15 +74,17 @@ function ModalProducto({ producto, onCerrar, onGuardado }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-amari-titulo/40 p-4 backdrop-blur-sm">
       <div className="tarjeta max-h-[90vh] w-full max-w-lg overflow-y-auto">
         <div className="flex items-center justify-between border-b border-amari-borde px-6 py-4">
-          <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-amari-titulo">
-            <Flower2 size={18} className="text-amari-primario" />
+          <h2 className="flex items-center gap-3 font-display text-xl font-semibold text-amari-titulo">
+            <span className="icono-tarjeta h-9 w-9">
+              <Flower2 size={18} />
+            </span>
             {editando ? "Editar Producto" : "Nuevo Producto"}
           </h2>
           <button
             type="button"
             onClick={onCerrar}
             aria-label="Cerrar"
-            className="text-amari-acento hover:text-amari-primario-oscuro"
+            className="rounded-full p-1.5 text-amari-acento transition hover:bg-pink-50 hover:text-amari-primario-oscuro"
           >
             <X size={20} />
           </button>
@@ -158,7 +159,7 @@ function ModalProducto({ producto, onCerrar, onGuardado }) {
             />
           </div>
 
-          <div className="rounded-xl border border-amari-borde p-4">
+          <div className="rounded-2xl border border-amari-borde p-4">
             <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
               <div>
                 <label htmlFor="tipo_variante" className={claseEtiqueta}>
@@ -235,14 +236,14 @@ function ModalProducto({ producto, onCerrar, onGuardado }) {
             </label>
           )}
 
-          {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+          {error && <p className="rounded-2xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
           <div className="flex justify-end gap-3 pt-1">
             <button
               type="button"
               onClick={onCerrar}
               disabled={enviando}
-              className="rounded-full border border-amari-borde px-5 py-2.5 text-sm font-semibold text-amari-primario-oscuro hover:bg-amari-bg-soft disabled:opacity-60"
+              className="btn-secundario"
             >
               Cancelar
             </button>

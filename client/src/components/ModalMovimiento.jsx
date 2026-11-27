@@ -64,22 +64,24 @@ function ModalMovimiento({ insumo, tipo, onCerrar, onGuardado }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-amari-titulo/40 p-4 backdrop-blur-sm">
       <div className="tarjeta w-full max-w-md">
         <div className="flex items-center justify-between border-b border-amari-borde px-6 py-4">
-          <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-amari-titulo">
-            <Flower2 size={18} className="text-amari-primario" />
+          <h2 className="flex items-center gap-3 font-display text-xl font-semibold text-amari-titulo">
+            <span className="icono-tarjeta h-9 w-9">
+              <Flower2 size={18} />
+            </span>
             {texto.titulo}
           </h2>
           <button
             type="button"
             onClick={onCerrar}
             aria-label="Cerrar"
-            className="text-amari-acento hover:text-amari-primario-oscuro"
+            className="rounded-full p-1.5 text-amari-acento transition hover:bg-pink-50 hover:text-amari-primario-oscuro"
           >
             <X size={20} />
           </button>
         </div>
 
         <form onSubmit={enviar} className="space-y-4 px-6 py-5">
-          <div className="rounded-xl bg-amari-bg-soft p-3 text-sm text-amari-titulo">
+          <div className="rounded-2xl bg-amari-bg-soft p-3 text-sm text-amari-titulo">
             <p className="font-semibold">{insumo.nombre}</p>
             <p className="text-amari-acento">
               Disponible: {formatearCantidad(insumo.stock)} {insumo.unidad}
@@ -116,14 +118,14 @@ function ModalMovimiento({ insumo, tipo, onCerrar, onGuardado }) {
             </p>
           )}
 
-          {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+          {error && <p className="rounded-2xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
           <div className="flex justify-end gap-3 pt-1">
             <button
               type="button"
               onClick={onCerrar}
               disabled={enviando}
-              className="rounded-full border border-amari-borde px-5 py-2.5 text-sm font-semibold text-amari-primario-oscuro hover:bg-amari-bg-soft disabled:opacity-60"
+              className="btn-secundario"
             >
               Cancelar
             </button>

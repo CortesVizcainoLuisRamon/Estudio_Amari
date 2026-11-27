@@ -66,15 +66,17 @@ function DetalleCita({ cita, onCerrar, onCambio }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-amari-borde px-6 py-4">
-          <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-amari-titulo">
-            <Flower2 size={18} className="text-amari-primario" />
+          <h2 className="flex items-center gap-3 font-display text-xl font-semibold text-amari-titulo">
+            <span className="icono-tarjeta h-9 w-9">
+              <Flower2 size={18} />
+            </span>
             Detalle de la cita
           </h2>
           <button
             type="button"
             onClick={onCerrar}
             aria-label="Cerrar"
-            className="text-amari-acento hover:text-amari-primario-oscuro"
+            className="rounded-full p-1.5 text-amari-acento transition hover:bg-pink-50 hover:text-amari-primario-oscuro"
           >
             <X size={20} />
           </button>
@@ -104,7 +106,7 @@ function DetalleCita({ cita, onCerrar, onCambio }) {
 
           <div>
             <p className="mb-2 text-amari-acento">Servicios</p>
-            <ul className="divide-y divide-amari-borde rounded-xl border border-amari-borde">
+            <ul className="divide-y divide-amari-borde rounded-2xl border border-amari-borde">
               {cita.servicios.map((s) => (
                 <li key={s.id} className="flex items-center justify-between px-3 py-2">
                   <span>
@@ -131,7 +133,7 @@ function DetalleCita({ cita, onCerrar, onCambio }) {
           </div>
 
           {verFidelidad && fid && (
-            <div className="rounded-xl border border-amari-borde bg-amari-bg-soft p-3">
+            <div className="rounded-2xl border border-amari-borde bg-amari-bg-soft p-3">
               <p className="flex items-center gap-2 font-semibold">
                 <Gift size={16} className="text-amari-primario" />
                 Fidelidad: {fid.sellos}/{fid.requeridas} visitas
@@ -186,7 +188,7 @@ function DetalleCita({ cita, onCerrar, onCambio }) {
             </p>
           )}
 
-          {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-red-600">{error}</p>}
+          {error && <p className="rounded-2xl bg-red-50 px-3 py-2 text-red-600">{error}</p>}
 
           {acciones.length > 0 ? (
             <div className="flex flex-wrap justify-end gap-2 pt-2">

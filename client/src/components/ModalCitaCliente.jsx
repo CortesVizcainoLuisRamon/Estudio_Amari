@@ -9,7 +9,7 @@ import { formatearDuracion, formatearMoneda, etiquetaPrecio } from "../utils/for
 const PASOS = ["Servicio", "Fecha y hora"];
 
 const claseOpcion = (activa) =>
-  `flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${
+  `flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${
     activa
       ? "border-amari-primario bg-amari-bg-soft"
       : "border-amari-borde bg-white hover:bg-amari-bg-soft"
@@ -136,15 +136,17 @@ function ModalCitaCliente({ onCerrar, onGuardado }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-amari-titulo/40 p-4 backdrop-blur-sm">
       <div className="tarjeta flex max-h-[90vh] w-full max-w-xl flex-col">
         <div className="flex items-center justify-between border-b border-amari-borde px-6 py-4">
-          <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-amari-titulo">
-            <Flower2 size={18} className="text-amari-primario" />
+          <h2 className="flex items-center gap-3 font-display text-xl font-semibold text-amari-titulo">
+            <span className="icono-tarjeta h-9 w-9">
+              <Flower2 size={18} />
+            </span>
             Agendar cita
           </h2>
           <button
             type="button"
             onClick={onCerrar}
             aria-label="Cerrar"
-            className="text-amari-acento hover:text-amari-primario-oscuro"
+            className="rounded-full p-1.5 text-amari-acento transition hover:bg-pink-50 hover:text-amari-primario-oscuro"
           >
             <X size={20} />
           </button>
@@ -183,7 +185,7 @@ function ModalCitaCliente({ onCerrar, onGuardado }) {
               </p>
               {Object.entries(porCategoria).map(([categoria, lista]) => (
                 <div key={categoria} className="mb-4">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-amari-acento">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-wider text-amari-acento">
                     {categoria}
                   </p>
                   <div className="space-y-2">
@@ -241,7 +243,7 @@ function ModalCitaCliente({ onCerrar, onGuardado }) {
                     <p className="text-sm text-red-600">No se pudo consultar la disponibilidad.</p>
                   )}
                   {dispActual && !dispActual.error && grupos.length === 0 && (
-                    <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                    <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
                       No hay horarios disponibles ese día. Prueba con otra fecha.
                     </p>
                   )}
@@ -265,7 +267,7 @@ function ModalCitaCliente({ onCerrar, onGuardado }) {
                                 key={h}
                                 type="button"
                                 onClick={() => setSeleccion({ empleadoId: g.empleado_id, hora: h })}
-                                className={`rounded-xl border py-2 text-sm font-medium transition ${
+                                className={`rounded-2xl border py-2 text-sm font-medium transition ${
                                   activa
                                     ? "border-transparent bg-amari-primario text-white"
                                     : "border-amari-borde bg-white text-amari-primario hover:bg-amari-bg-soft"
@@ -283,7 +285,7 @@ function ModalCitaCliente({ onCerrar, onGuardado }) {
               )}
 
               {seleccionValida && (
-                <div className="mt-4 rounded-xl bg-amari-bg-soft p-3 text-sm text-amari-titulo">
+                <div className="mt-4 rounded-2xl bg-amari-bg-soft p-3 text-sm text-amari-titulo">
                   <p className="font-semibold">{fechaLarga(fecha)}</p>
                   <p>
                     {seleccion.hora} a {horaMasMinutos(seleccion.hora, duracionTotal)} ·{" "}
@@ -295,7 +297,7 @@ function ModalCitaCliente({ onCerrar, onGuardado }) {
               <div className="mt-4">
                 <label
                   htmlFor="notas"
-                  className="mb-1 block text-xs font-semibold uppercase tracking-wide text-amari-primario"
+                  className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-amari-primario"
                 >
                   Notas (opcional)
                 </label>
@@ -306,7 +308,7 @@ function ModalCitaCliente({ onCerrar, onGuardado }) {
                   value={notas}
                   onChange={(e) => setNotas(e.target.value)}
                   placeholder="Alergias, referencias, algo que debamos saber..."
-                  className="w-full rounded-xl border border-amari-borde px-4 py-2.5 text-sm text-amari-titulo focus:border-amari-primario focus:outline-none focus:ring-2 focus:ring-amari-primario/20"
+                  className="entrada"
                 />
               </div>
             </>
@@ -323,7 +325,7 @@ function ModalCitaCliente({ onCerrar, onGuardado }) {
           )}
 
           {error && (
-            <p className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+            <p className="mb-3 rounded-2xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
           )}
 
           <div className="grid grid-cols-2 gap-3">
@@ -331,7 +333,7 @@ function ModalCitaCliente({ onCerrar, onGuardado }) {
               type="button"
               onClick={retroceder}
               disabled={enviando}
-              className="rounded-full border border-amari-borde px-5 py-2.5 text-sm font-semibold text-amari-primario-oscuro hover:bg-amari-bg-soft disabled:opacity-60"
+              className="btn-secundario"
             >
               {paso === 0 ? "Cancelar" : "← Atrás"}
             </button>

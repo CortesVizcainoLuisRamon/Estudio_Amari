@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { pool } from "../config/db.js";
+import { calcularFidelidad } from "./citas.controller.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TELEFONO_REGEX = /^[0-9+\-\s()]{7,20}$/;
@@ -18,6 +19,8 @@ export const obtenerPerfilCompleto = async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT u.id, u.nombre, u.apellidos, u.email, u.telefono, u.rol, u.foto,
+              DATE_FORMAT(u.creado_en, '%Y-%m-%d') AS miembro_desde,
+              c.id AS cliente_id,
               DATE_FORMAT(c.fecha_nacimiento, '%Y-%m-%d') AS fecha_nacimiento
        FROM usuarios u
        LEFT JOIN clientes c ON c.usuario_id = u.id
@@ -29,7 +32,25 @@ export const obtenerPerfilCompleto = async (req, res) => {
       return res.status(404).json({ ok: false, mensaje: "Usuario no encontrado" });
     }
 
-    res.json({ ok: true, data: rows[0] });
+    // cliente_id solo sirve para calcular el resumen; no se manda al navegador
+    const { cliente_id: clienteId, ...perfil } = rows[0];
+
+    // Solo las clientas tienen visitas y tarjeta de fidelidad
+    if (perfil.rol === "cliente" && clienteId) {
+      const [[conteo]] = await pool.query(
+        "SELECT COUNT(*) AS visitas FROM citas WHERE cliente_id = ? AND estado = 'completada'",
+        [clienteId]
+      );
+      const fidelidad = await calcularFidelidad(pool, clienteId);
+
+      perfil.resumen = {
+        visitas: Number(conteo.visitas),
+        sellos: fidelidad.sellos,
+        premio: fidelidad.premio_disponible,
+      };
+    }
+
+    res.json({ ok: true, data: perfil });
   } catch (err) {
     console.error("Error al obtener el perfil:", err.message);
     res.status(500).json({ ok: false, mensaje: "Error al obtener el perfil" });

@@ -4,16 +4,26 @@ import { Camera, ImagePlus, Trash2, Loader2 } from "lucide-react";
 const MAX_MB = 12;
 
 const claseBoton =
-  "inline-flex items-center gap-1.5 rounded-xl border border-amari-borde px-3 py-2 text-sm font-semibold text-amari-primario transition hover:bg-amari-bg-soft disabled:opacity-50";
+  "inline-flex items-center gap-1.5 rounded-full border border-amari-borde px-4 py-2 text-sm font-semibold text-amari-primario transition hover:bg-amari-bg-soft disabled:opacity-50";
 
+const claseBotonPerfil =
+  "inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-pink-200 bg-white py-3 text-sm font-semibold text-amari-primario-oscuro transition hover:bg-pink-50 disabled:opacity-50";
+
+// Variantes:
+//  - normal (productos): zona punteada con botones debajo
+//  - redonda: igual pero circular y chica
+//  - perfil: avatar grande con insignia de cámara. Lo que pongas como `children`
+//    (nombre, etiquetas, estadísticas) queda entre el avatar y los botones.
 function SelectorFoto({
   url,
   alSubir,
   alQuitar,
   onOcupado,
   redonda = false,
+  perfil = false,
   iniciales = "",
   camara = "environment",
+  children,
 }) {
   const galeria = useRef(null);
   const tomar = useRef(null);
@@ -53,17 +63,113 @@ function SelectorFoto({
     recibir(e.dataTransfer.files?.[0]);
   };
 
+  const zonaSoltar = {
+    onDragOver: (e) => {
+      e.preventDefault();
+      setArrastrando(true);
+    },
+    onDragLeave: () => setArrastrando(false),
+    onDrop: alSoltar,
+  };
+
+  const entradas = (
+    <>
+      <input
+        ref={galeria}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={alElegir}
+        className="hidden"
+      />
+      <input
+        ref={tomar}
+        type="file"
+        accept="image/*"
+        capture={camara}
+        onChange={alElegir}
+        className="hidden"
+      />
+    </>
+  );
+
+  if (perfil) {
+    return (
+      <div className="flex flex-col items-center">
+        <div {...zonaSoltar} className="relative h-33 w-33">
+          <div
+            className={`h-full w-full rounded-full bg-linear-to-br from-pink-200 to-amari-primario p-1 transition ${
+              arrastrando ? "scale-105 ring-4 ring-amari-primario/30" : ""
+            }`}
+          >
+            <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full border-4 border-white bg-linear-to-br from-amari-bg-soft to-amari-borde">
+              {url ? (
+                <img src={url} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span className="font-display text-4xl font-semibold text-amari-primario-oscuro">
+                  {iniciales}
+                </span>
+              )}
+              {ocupado && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/70">
+                  <Loader2 size={24} className="animate-spin text-amari-primario" />
+                </div>
+              )}
+            </div>
+          </div>
+          <button
+            type="button"
+            disabled={ocupado}
+            aria-label="Cambiar foto de perfil"
+            onClick={() => galeria.current?.click()}
+            className="absolute bottom-0.5 right-0 flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-white bg-linear-to-r from-amari-primario to-amari-primario-oscuro text-white shadow-md shadow-amari-primario/40 transition hover:brightness-110 disabled:opacity-60"
+          >
+            <Camera size={18} />
+          </button>
+        </div>
+
+        {children}
+
+        <div className="mt-6 flex w-full flex-col gap-2.5 px-5">
+          <button
+            type="button"
+            disabled={ocupado}
+            onClick={() => galeria.current?.click()}
+            className={claseBotonPerfil}
+          >
+            <ImagePlus size={17} /> {url ? "Cambiar foto" : "Subir foto"}
+          </button>
+          <button
+            type="button"
+            disabled={ocupado}
+            onClick={() => tomar.current?.click()}
+            className={`${claseBotonPerfil} sm:hidden`}
+          >
+            <Camera size={17} /> Tomar foto
+          </button>
+          {url && (
+            <button
+              type="button"
+              disabled={ocupado}
+              onClick={() => ejecutar(alQuitar)}
+              className="py-1.5 text-sm font-semibold text-red-600 transition hover:text-red-700 disabled:opacity-50"
+            >
+              Quitar foto
+            </button>
+          )}
+        </div>
+
+        {error && <p className="mt-3 px-5 text-sm text-red-600">{error}</p>}
+        {entradas}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setArrastrando(true);
-        }}
-        onDragLeave={() => setArrastrando(false)}
-        onDrop={alSoltar}
+        {...zonaSoltar}
         className={`relative flex items-center justify-center overflow-hidden border-2 border-dashed bg-amari-bg-soft transition ${
-          redonda ? "h-28 w-28 rounded-full" : "h-40 w-full rounded-xl"
+          redonda ? "h-28 w-28 rounded-full" : "h-40 w-full rounded-2xl"
         } ${arrastrando ? "border-amari-primario" : "border-amari-borde"}`}
       >
         {url ? (
@@ -104,22 +210,7 @@ function SelectorFoto({
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
-
-      <input
-        ref={galeria}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        onChange={alElegir}
-        className="hidden"
-      />
-      <input
-        ref={tomar}
-        type="file"
-        accept="image/*"
-        capture={camara}
-        onChange={alElegir}
-        className="hidden"
-      />
+      {entradas}
     </div>
   );
 }

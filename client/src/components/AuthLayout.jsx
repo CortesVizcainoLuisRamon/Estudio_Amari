@@ -1,49 +1,108 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { KeyRound, Flower2 } from "lucide-react";
+import {
+  Brush,
+  Eye,
+  Flower2,
+  Hand,
+  KeyRound,
+  MapPin,
+  PenLine,
+  Phone,
+  Scissors,
+  Sparkles,
+} from "lucide-react";
 import logo from "../assets/branding/logo-amari-cuadrado.png";
+import { ESTUDIO, estadoHoy, saludo } from "../config/estudio";
+
+const SERVICIOS = [
+  { nombre: "Nails", Icono: Hand },
+  { nombre: "Hair", Icono: Scissors },
+  { nombre: "Lashes", Icono: Eye },
+  { nombre: "Eyebrows", Icono: PenLine },
+  { nombre: "Make-up", Icono: Brush },
+];
 
 function AuthLayout({ titulo, subtitulo, activa, children }) {
+  // Se refresca cada minuto para que el saludo y el "abierto/cerrado" no se queden viejos
+  const [ahora, setAhora] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setAhora(new Date()), 60000);
+    return () => clearInterval(id);
+  }, []);
+  const estado = estadoHoy(ahora);
+
   const pestana = (nombre) =>
-    `flex flex-1 items-center justify-center gap-2 rounded-xl py-2 text-sm font-semibold transition ${
+    `flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition ${
       activa === nombre
-        ? "bg-white text-amari-primario-oscuro shadow-sm"
+        ? "bg-white text-amari-titulo shadow-md shadow-amari-primario/15 ring-1 ring-amari-borde [&>svg]:text-amari-primario"
         : "text-amari-primario/80 hover:text-amari-primario-oscuro"
     }`;
 
   return (
-    <main className="grid min-h-screen md:grid-cols-2">
-      <section className="relative hidden flex-col items-center justify-center overflow-hidden bg-linear-to-br from-amari-primario to-amari-primario-oscuro p-10 text-center text-white md:flex">
-        <div className="absolute -left-16 -top-16 h-64 w-64 rounded-full bg-white/10" />
-        <div className="absolute -bottom-24 -right-16 h-96 w-96 rounded-full bg-black/10" />
-        <img
-          src={logo}
-          alt="Estudio Amari"
-          className="relative h-44 w-44 rounded-full border-4 border-white/70 object-cover shadow-xl"
-        />
-        <div className="relative my-6 h-px w-16 bg-white/50" />
-        <p className="relative font-display text-2xl italic leading-snug">
+    <main className="flex min-h-screen flex-col md:grid md:grid-cols-2">
+      {/* Panel rosa: encabezado en celular, mitad izquierda en laptop */}
+      <section className="relative flex flex-col items-center justify-center overflow-hidden bg-linear-to-br from-amari-primario to-amari-primario-oscuro px-6 pb-16 pt-10 text-center text-white md:min-h-screen md:p-10">
+        <div className="absolute -left-16 -top-16 h-64 w-64 rounded-full bg-white/10 md:-left-24 md:-top-24 md:h-96 md:w-96" />
+        <div className="absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-black/10 md:-bottom-36 md:-right-24 md:h-136 md:w-136" />
+        <div className="absolute left-1/2 top-1/2 hidden h-160 w-160 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/15 md:block" />
+        <div className="absolute -right-20 top-20 hidden h-72 w-72 rounded-full border border-white/15 md:block" />
+
+        <Sparkles size={22} strokeWidth={1.6} className="absolute left-10 top-36 text-white/50 md:left-20 md:top-1/3" />
+        <Sparkles size={14} strokeWidth={1.6} className="absolute right-10 top-20 text-white/40 md:right-28 md:top-1/2" />
+        <Sparkles size={26} strokeWidth={1.6} className="absolute bottom-1/3 right-16 hidden text-white/50 md:block" />
+        <Sparkles size={14} strokeWidth={1.6} className="absolute bottom-1/4 left-32 hidden text-white/35 md:block" />
+
+        <div className="relative mt-6 flex h-28 w-28 items-center justify-center md:mt-0 md:h-44 md:w-44">
+          <div className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.3)_0%,rgba(255,255,255,0.1)_45%,transparent_70%)] md:h-104 md:w-104" />
+          <div className="absolute -inset-4 rounded-full border border-white/35 md:-inset-5" />
+          <div className="absolute -inset-8 rounded-full border border-dashed border-white/25 md:-inset-11" />
+          <img
+            src={logo}
+            alt="Estudio Amari"
+            className="relative h-full w-full rounded-full border-4 border-white/70 object-cover shadow-xl"
+          />
+        </div>
+
+        <div className="relative mt-8 hidden h-0.5 w-16 rounded-full bg-white/50 md:mb-7 md:mt-14 md:block" />
+        <p className="relative mt-6 font-display text-xl italic leading-snug md:mt-0 md:text-3xl md:leading-snug">
           “Tu belleza es única,
           <br />
           merece atención especial.”
         </p>
-        <p className="relative mt-6 text-xs tracking-[0.25em] text-white/80">
+
+        <p className="relative mt-4 text-[0.7rem] tracking-[0.25em] text-white/85 md:hidden">
           NAILS · HAIR · LASHES
         </p>
+        <ul className="relative mt-8 hidden max-w-md flex-wrap justify-center gap-2.5 md:flex">
+          {SERVICIOS.map(({ nombre, Icono }) => (
+            <li
+              key={nombre}
+              className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] backdrop-blur-sm"
+            >
+              <Icono size={15} />
+              {nombre}
+            </li>
+          ))}
+        </ul>
       </section>
 
-      <section className="flex flex-col items-center justify-center bg-amari-bg-soft px-6 py-10">
-        <div className="w-full max-w-md">
-          <img
-            src={logo}
-            alt="Estudio Amari"
-            className="mx-auto mb-4 h-20 w-20 rounded-full object-cover md:hidden"
-          />
-          <h1 className="text-center font-display text-3xl font-semibold text-amari-titulo">
+      {/* Formulario: hoja que sube sobre el rosa en celular */}
+      <section className="relative -mt-8 flex flex-1 flex-col items-center justify-center overflow-hidden rounded-t-[2rem] bg-amari-bg-soft px-5 pb-10 pt-8 md:mt-0 md:rounded-none md:px-6 md:py-10">
+        <div className="absolute -right-20 -top-16 h-72 w-72 rounded-full bg-amari-acento/15 blur-3xl" />
+        <div className="absolute -bottom-16 -left-20 h-64 w-64 rounded-full bg-amari-acento/10 blur-3xl" />
+
+        <div className="relative w-full max-w-lg">
+          <p className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-amari-primario">
+            <Sparkles size={14} />
+            {saludo(ahora)}
+          </p>
+          <h1 className="mt-2 text-center font-display text-3xl font-semibold text-amari-titulo md:text-4xl">
             {titulo}
           </h1>
-          <p className="mb-6 mt-1 text-center text-sm text-amari-acento">{subtitulo}</p>
+          <p className="mb-6 mt-1.5 text-center text-sm text-amari-acento md:text-base">{subtitulo}</p>
 
-          <div className="mb-4 flex gap-1 rounded-2xl border border-amari-borde bg-amari-bg-soft p-1">
+          <div className="mb-4 flex gap-1.5 rounded-2xl border border-amari-borde bg-white p-1.5">
             <Link to="/login" className={pestana("login")}>
               <KeyRound size={16} /> Iniciar sesión
             </Link>
@@ -52,11 +111,37 @@ function AuthLayout({ titulo, subtitulo, activa, children }) {
             </Link>
           </div>
 
-          <div className="tarjeta p-6">{children}</div>
+          <div className="rounded-3xl border border-amari-borde bg-white p-5 shadow-xl shadow-amari-primario/10 sm:p-7">
+            {children}
+          </div>
 
-          <p className="mt-6 text-center text-xs text-amari-acento">
-            Estudio Amari · Av. Ticomán 839, Col. Ticomán · (55) 8252-4200
-          </p>
+          <div className="mt-6 flex flex-col items-center gap-2.5 text-xs text-amari-primario md:flex-row md:flex-wrap md:justify-center md:gap-x-5">
+            <span className="inline-flex items-center gap-1.5">
+              <MapPin size={14} /> {ESTUDIO.direccion}
+            </span>
+            <a href={`tel:${ESTUDIO.telefonoLink}`} className="inline-flex items-center gap-1.5 hover:underline">
+              <Phone size={14} /> {ESTUDIO.telefono}
+            </a>
+            <span
+              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 font-semibold ${
+                estado.abierto
+                  ? "border-green-200 bg-green-50 text-green-700"
+                  : "border-rose-200 bg-rose-50 text-rose-700"
+              }`}
+            >
+              <span className="relative flex h-2 w-2">
+                {estado.abierto && (
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                )}
+                <span
+                  className={`relative inline-flex h-2 w-2 rounded-full ${
+                    estado.abierto ? "bg-green-500" : "bg-rose-500"
+                  }`}
+                />
+              </span>
+              {estado.texto}
+            </span>
+          </div>
         </div>
       </section>
     </main>

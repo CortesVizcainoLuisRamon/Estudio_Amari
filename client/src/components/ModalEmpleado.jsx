@@ -6,7 +6,7 @@ import { crearEmpleado, actualizarEmpleado } from "../services/empleados.service
 import { COLORES_AGENDA, DIAS } from "../config/empleados";
 
 const claseEtiqueta =
-  "mb-2 block text-xs font-semibold uppercase tracking-wide text-amari-primario";
+  "mb-2 block text-xs font-bold uppercase tracking-wider text-amari-primario";
 
 const claseChip = (activo) =>
   `rounded-full border px-3 py-1 text-xs font-medium transition ${
@@ -105,15 +105,17 @@ function ModalEmpleado({ empleado, servicios, onCerrar, onGuardado }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-amari-borde px-6 py-4">
-          <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-amari-titulo">
-            <Flower2 size={18} className="text-amari-primario" />
+          <h2 className="flex items-center gap-3 font-display text-xl font-semibold text-amari-titulo">
+            <span className="icono-tarjeta h-9 w-9">
+              <Flower2 size={18} />
+            </span>
             {editando ? "Editar Empleada" : "Nueva Empleada"}
           </h2>
           <button
             type="button"
             onClick={onCerrar}
             aria-label="Cerrar"
-            className="text-amari-acento hover:text-amari-primario-oscuro"
+            className="rounded-full p-1.5 text-amari-acento transition hover:bg-pink-50 hover:text-amari-primario-oscuro"
           >
             <X size={20} />
           </button>
@@ -121,7 +123,7 @@ function ModalEmpleado({ empleado, servicios, onCerrar, onGuardado }) {
 
         <form onSubmit={enviar} className="px-6 py-5">
           {error && (
-            <p className="mb-4 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+            <p className="mb-4 rounded-2xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
           )}
 
           <div className="grid gap-x-4 sm:grid-cols-2">
@@ -200,7 +202,7 @@ function ModalEmpleado({ empleado, servicios, onCerrar, onGuardado }) {
           </div>
 
           {!editando && (
-            <p className="mb-4 rounded-xl bg-amari-bg-soft px-3 py-2 text-xs text-amari-texto">
+            <p className="mb-4 rounded-2xl bg-amari-bg-soft px-3 py-2 text-xs text-amari-texto">
               Al guardar se generará una <strong>contraseña temporal</strong> que verás una sola vez. La
               empleada deberá cambiarla al entrar por primera vez.
             </p>
@@ -235,7 +237,7 @@ function ModalEmpleado({ empleado, servicios, onCerrar, onGuardado }) {
             <button
               type="button"
               onClick={onCerrar}
-              className="rounded-full border border-amari-borde px-5 py-2.5 text-sm font-semibold text-amari-primario-oscuro hover:bg-amari-bg-soft"
+              className="btn-secundario"
             >
               Cancelar
             </button>

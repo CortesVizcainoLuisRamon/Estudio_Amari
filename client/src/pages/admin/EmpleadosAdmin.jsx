@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Percent, Scissors } from "lucide-react";
+import { Plus, Pencil, Percent, Scissors, UserCog } from "lucide-react";
 import { getEmpleados } from "../../services/empleados.service";
 import { getServicios } from "../../services/servicios.service";
 import { DIAS } from "../../config/empleados";
@@ -52,7 +52,7 @@ function EmpleadosAdmin() {
         <button
           onClick={() => setModal({ empleado: null })}
           disabled={cargando || Boolean(error)}
-          className="btn-primario"
+          className="btn-primario px-6"
         >
           <Plus size={18} /> Nueva empleada
         </button>
@@ -62,9 +62,10 @@ function EmpleadosAdmin() {
       {error && <p className="text-center text-red-600">{error}</p>}
 
       {!cargando && !error && empleados.length === 0 && (
-        <p className="tarjeta p-10 text-center text-sm text-amari-acento">
+        <div className="vacio text-sm">
+          <UserCog size={30} className="text-amari-acento" />
           Aún no hay empleadas registradas.
-        </p>
+        </div>
       )}
 
       {!cargando && !error && empleados.length > 0 && (
@@ -72,20 +73,20 @@ function EmpleadosAdmin() {
           {empleados.map((e) => (
             <article
               key={e.id}
-              className={`tarjeta group p-5 transition hover:shadow-md ${
+              className={`tarjeta group p-5 transition hover:-translate-y-0.5 hover:shadow-xl sm:p-6 ${
                 e.activo ? "" : "opacity-60"
               }`}
             >
               <div className="flex items-start gap-4">
                 <span
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white"
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-base font-bold text-white shadow-md ring-4 ring-white"
                   style={{ backgroundColor: e.color }}
                 >
                   {`${e.nombre[0]}${e.apellidos[0]}`.toUpperCase()}
                 </span>
 
                 <div className="min-w-0 flex-1">
-                  <h3 className="truncate font-display text-lg font-semibold text-amari-titulo">
+                  <h3 className="truncate font-display text-xl font-semibold text-amari-titulo">
                     {e.nombre} {e.apellidos}
                   </h3>
                   <p className="text-sm text-amari-acento">
@@ -93,20 +94,20 @@ function EmpleadosAdmin() {
                     {!e.activo && " · Inactiva"}
                   </p>
 
-                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-amari-texto">
-                    <span className="flex items-center gap-1">
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-amari-primario-oscuro">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-pink-50 px-3 py-1">
                       <Percent size={12} /> {e.comision_pct.toFixed(2)}% comisión
                     </span>
-                    <span className="flex items-center gap-1">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-pink-50 px-3 py-1">
                       <Scissors size={12} /> {e.servicios_ids.length} servicios
                     </span>
                   </div>
 
-                  <div className="mt-3 flex flex-wrap gap-1">
+                  <div className="mt-3 flex flex-wrap gap-1.5">
                     {DIAS.filter((d) => e.dias_laborales.includes(d.valor)).map((d) => (
                       <span
                         key={d.valor}
-                        className="rounded-full border border-amari-borde bg-amari-bg-soft px-2 py-0.5 text-[11px] text-amari-primario"
+                        className="rounded-full border border-amari-borde bg-amari-bg-soft px-2.5 py-0.5 text-[11px] font-semibold text-amari-primario-oscuro"
                       >
                         {d.corto}
                       </span>
@@ -117,9 +118,9 @@ function EmpleadosAdmin() {
                 <button
                   onClick={() => setModal({ empleado: e })}
                   aria-label={`Editar a ${e.nombre}`}
-                  className="rounded-lg p-1.5 text-amari-acento transition hover:bg-amari-bg-soft focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                  className="rounded-xl p-2 text-amari-primario-oscuro transition hover:bg-pink-50 focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                 >
-                  <Pencil size={16} />
+                  <Pencil size={17} />
                 </button>
               </div>
             </article>

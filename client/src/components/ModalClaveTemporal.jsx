@@ -16,8 +16,10 @@ function ModalClaveTemporal({ nombre, email, clave, nuevo, onCerrar }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-amari-titulo/40 p-4 backdrop-blur-sm">
       <div className="tarjeta w-full max-w-md p-6">
-        <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-amari-titulo">
-          <KeyRound size={18} className="text-amari-primario" />
+        <h2 className="flex items-center gap-3 font-display text-xl font-semibold text-amari-titulo">
+          <span className="icono-tarjeta h-9 w-9">
+              <KeyRound size={18} />
+            </span>
           {nuevo ? "Acceso creado" : "Contraseña restablecida"}
         </h2>
 
@@ -26,7 +28,7 @@ function ModalClaveTemporal({ nombre, email, clave, nuevo, onCerrar }) {
           <strong className="break-all">{email}</strong>.
         </p>
 
-        <div className="mt-4 flex items-center gap-2 rounded-xl border border-amari-borde bg-amari-bg-soft p-3">
+        <div className="mt-4 flex items-center gap-2 rounded-2xl border border-amari-borde bg-amari-bg-soft p-3">
           <code className="flex-1 select-all break-all text-center font-mono text-xl font-semibold tracking-wider text-amari-titulo">
             {clave}
           </code>
@@ -40,7 +42,7 @@ function ModalClaveTemporal({ nombre, email, clave, nuevo, onCerrar }) {
           </button>
         </div>
 
-        <p className="mt-4 flex gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-800">
+        <p className="mt-4 flex gap-2 rounded-2xl bg-amber-50 p-3 text-xs text-amber-800">
           <TriangleAlert size={16} className="mt-0.5 shrink-0" />
           <span>
             Solo se muestra <strong>una vez</strong>: al cerrar esta ventana no se podrá volver a ver. Al

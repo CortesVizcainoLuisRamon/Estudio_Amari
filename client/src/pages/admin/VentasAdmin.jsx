@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { TrendingUp, Scissors, ShoppingBag, Gift, ReceiptText } from "lucide-react";
+import { TrendingUp, Scissors, ShoppingBag, Gift, ReceiptText, BadgePercent } from "lucide-react";
 import { getVentas } from "../../services/ventas.service";
 import Estadistica from "../../components/Estadistica";
 import { aTexto, deTexto, sumarDias, inicioSemana, fechaLarga } from "../../utils/fechas";
@@ -12,13 +12,6 @@ const PERIODOS = [
   { valor: "mes_pasado", texto: "Mes pasado" },
   { valor: "personalizado", texto: "Personalizado" },
 ];
-
-const chip = (activo) =>
-  `rounded-full border px-4 py-1.5 text-sm font-medium transition ${
-    activo
-      ? "border-transparent bg-linear-to-r from-amari-primario to-amari-primario-oscuro text-white shadow-md shadow-amari-primario/30"
-      : "border-amari-borde bg-white text-amari-primario hover:bg-amari-bg-soft"
-  }`;
 
 const rangoDe = (periodo, base, personal) => {
   const a = base.getFullYear();
@@ -94,7 +87,11 @@ function VentasAdmin() {
 
       <div className="mb-4 flex flex-wrap gap-2">
         {PERIODOS.map((p) => (
-          <button key={p.valor} onClick={() => setPeriodo(p.valor)} className={chip(periodo === p.valor)}>
+          <button
+            key={p.valor}
+            onClick={() => setPeriodo(p.valor)}
+            className={`chip ${periodo === p.valor ? "chip-activo" : ""}`}
+          >
             {p.texto}
           </button>
         ))}
@@ -109,7 +106,7 @@ function VentasAdmin() {
             <div key={campo}>
               <label
                 htmlFor={`v-${campo}`}
-                className="mb-1 block text-xs font-semibold uppercase tracking-wide text-amari-primario"
+                className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-amari-primario"
               >
                 {etiqueta}
               </label>
@@ -118,7 +115,7 @@ function VentasAdmin() {
                 type="date"
                 value={personal[campo]}
                 onChange={(e) => setPersonal((x) => ({ ...x, [campo]: e.target.value }))}
-                className="rounded-xl border border-amari-borde bg-white px-4 py-2 text-sm text-amari-titulo focus:border-amari-primario focus:outline-none focus:ring-2 focus:ring-amari-primario/20"
+                className="entrada w-auto"
               />
             </div>
           ))}
@@ -126,7 +123,7 @@ function VentasAdmin() {
       )}
 
       {!valido && (
-        <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
+        <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
           Elige un rango válido: la fecha inicial no puede ser posterior a la final y el máximo es de un año.
         </p>
       )}
@@ -135,7 +132,7 @@ function VentasAdmin() {
 
       {d && (
         <>
-          <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <Estadistica
               icono={TrendingUp}
               titulo="Ingresos totales"
@@ -162,12 +159,12 @@ function VentasAdmin() {
             />
           </div>
 
-          <section className="mb-6">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-display text-xl font-semibold text-amari-titulo">
+          <section className="tarjeta mb-6 p-5 sm:p-6">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-display text-2xl font-semibold text-amari-titulo">
                 Ingresos por día
               </h2>
-              <div className="flex gap-4 text-xs text-amari-texto">
+              <div className="flex gap-4 text-xs font-semibold text-amari-texto">
                 <span className="flex items-center gap-1.5">
                   <span className="h-3 w-3 rounded bg-amari-primario" /> Servicios
                 </span>
@@ -177,9 +174,9 @@ function VentasAdmin() {
               </div>
             </div>
 
-            <div className="tarjeta overflow-x-auto p-5">
+            <div className="overflow-x-auto">
               <div style={{ minWidth: `${d.por_dia.length * 12}px` }}>
-                <div className="flex h-40 items-end gap-1 border-b border-amari-borde">
+                <div className="flex h-44 items-end gap-1 border-b border-amari-borde">
                   {d.por_dia.map((x) => (
                     <div
                       key={x.dia}
@@ -191,7 +188,7 @@ function VentasAdmin() {
                         style={{ height: `${(x.boutique / maxDia) * 100}%` }}
                       />
                       <div
-                        className="rounded-t bg-amari-primario"
+                        className="rounded-t-md bg-linear-to-t from-amari-primario to-amari-acento"
                         style={{ height: `${(x.servicios / maxDia) * 100}%` }}
                       />
                     </div>
@@ -199,7 +196,7 @@ function VentasAdmin() {
                 </div>
 
                 {d.por_dia.length <= 31 && (
-                  <div className="mt-1 flex gap-1">
+                  <div className="mt-1.5 flex gap-1">
                     {d.por_dia.map((x) => (
                       <p
                         key={x.dia}
@@ -214,110 +211,132 @@ function VentasAdmin() {
             </div>
           </section>
 
-          <div className="mb-6 grid gap-6 lg:grid-cols-2">
-            <section>
-              <h2 className="mb-3 font-display text-xl font-semibold text-amari-titulo">
+          <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <section className="tarjeta p-5 sm:p-6">
+              <h2 className="mb-4 font-display text-2xl font-semibold text-amari-titulo">
                 Servicios más pedidos
               </h2>
-              <div className="tarjeta space-y-3 p-5">
-                {d.servicios_top.length === 0 ? (
-                  <p className="text-sm text-amari-texto">Sin citas completadas en este periodo.</p>
-                ) : (
-                  d.servicios_top.map((s) => (
-                    <div key={s.nombre} className="flex justify-between gap-3 text-sm">
-                      <span className="min-w-0 truncate font-medium text-amari-titulo">
-                        {s.nombre}
-                      </span>
-                      <span className="shrink-0 text-amari-acento">
-                        {s.veces}x · {formatearMoneda(s.valor)}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
+              {d.servicios_top.length === 0 ? (
+                <p className="text-sm text-amari-texto">Sin citas completadas en este periodo.</p>
+              ) : (
+                <ul className="space-y-4">
+                  {d.servicios_top.map((s) => (
+                    <li key={s.nombre}>
+                      <div className="flex justify-between gap-3 text-sm">
+                        <span className="min-w-0 truncate font-semibold text-amari-titulo">
+                          {s.nombre}
+                        </span>
+                        <span className="shrink-0">
+                          {s.veces}x · {formatearMoneda(s.valor)}
+                        </span>
+                      </div>
+                      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-amari-bg-soft">
+                        <div
+                          className="h-full rounded-full bg-linear-to-r from-amari-acento to-amari-primario"
+                          style={{ width: `${(s.veces / d.servicios_top[0].veces) * 100}%` }}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
 
-            <section>
-              <h2 className="mb-3 font-display text-xl font-semibold text-amari-titulo">
+            <section className="tarjeta p-5 sm:p-6">
+              <h2 className="mb-4 font-display text-2xl font-semibold text-amari-titulo">
                 Productos más vendidos
               </h2>
-              <div className="tarjeta space-y-3 p-5">
-                {d.productos_top.length === 0 ? (
-                  <p className="text-sm text-amari-texto">Sin pedidos entregados en este periodo.</p>
-                ) : (
-                  d.productos_top.map((x) => (
-                    <div key={x.nombre} className="flex justify-between gap-3 text-sm">
-                      <span className="min-w-0 truncate font-medium text-amari-titulo">
-                        {x.nombre}
-                      </span>
-                      <span className="shrink-0 text-amari-acento">
-                        {x.piezas} pz · {formatearMoneda(x.valor)}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
+              {d.productos_top.length === 0 ? (
+                <p className="text-sm text-amari-texto">Sin pedidos entregados en este periodo.</p>
+              ) : (
+                <ul className="space-y-4">
+                  {d.productos_top.map((x) => (
+                    <li key={x.nombre}>
+                      <div className="flex justify-between gap-3 text-sm">
+                        <span className="min-w-0 truncate font-semibold text-amari-titulo">
+                          {x.nombre}
+                        </span>
+                        <span className="shrink-0">
+                          {x.piezas} pz · {formatearMoneda(x.valor)}
+                        </span>
+                      </div>
+                      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-amari-bg-soft">
+                        <div
+                          className="h-full rounded-full bg-amber-400"
+                          style={{ width: `${(x.piezas / d.productos_top[0].piezas) * 100}%` }}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
           </div>
 
-          <section className="mb-6">
-            <h2 className="mb-3 font-display text-xl font-semibold text-amari-titulo">
-              Comisiones por especialista
-            </h2>
-            <div className="tarjeta divide-y divide-amari-borde">
+          <section className="tarjeta mb-6 p-5 sm:p-6">
+            <div className="mb-3 flex items-center gap-3.5">
+              <span className="icono-tarjeta">
+                <BadgePercent size={20} />
+              </span>
+              <h2 className="font-display text-2xl font-semibold text-amari-titulo">
+                Comisiones por especialista
+              </h2>
+            </div>
+
+            <div className="divide-y divide-amari-borde/60">
               {d.comisiones.length === 0 ? (
-                <p className="p-5 text-sm text-amari-texto">No hay especialistas registradas.</p>
+                <p className="py-3 text-sm text-amari-texto">No hay especialistas registradas.</p>
               ) : (
                 d.comisiones.map((e) => (
-                  <div key={e.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 p-4 text-sm">
+                  <div key={e.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3.5 text-sm">
                     <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: e.color }} />
                     <span className="min-w-0 flex-1 basis-40">
-                      <span className="block truncate font-semibold text-amari-titulo">{e.nombre}</span>
+                      <span className="block truncate font-bold text-amari-titulo">{e.nombre}</span>
                       <span className="block text-xs text-amari-acento">
                         {e.citas} {e.citas === 1 ? "cita" : "citas"} · {formatearMoneda(e.ingresos)} cobrados ·{" "}
                         {e.comision_pct}%
                       </span>
                     </span>
-                    <span className="font-display text-lg font-semibold text-amari-titulo">
+                    <span className="font-display text-xl font-semibold text-amari-titulo">
                       {formatearMoneda(e.comision)}
                     </span>
                   </div>
                 ))
               )}
-              {d.comisiones.length > 0 && (
-                <div className="flex justify-between bg-amari-bg-soft p-4 text-sm font-semibold text-amari-titulo">
-                  <span>Total de comisiones</span>
-                  <span className="font-display text-lg">{formatearMoneda(totalComisiones)}</span>
-                </div>
-              )}
             </div>
+            {d.comisiones.length > 0 && (
+              <div className="mt-1 flex items-center justify-between rounded-2xl bg-amari-bg-soft px-4 py-3.5 text-sm font-bold text-amari-titulo">
+                <span>Total de comisiones</span>
+                <span className="font-display text-xl">{formatearMoneda(totalComisiones)}</span>
+              </div>
+            )}
           </section>
 
-          <section>
-            <h2 className="mb-3 font-display text-xl font-semibold text-amari-titulo">
-              Movimientos
-            </h2>
+          <section className="tarjeta p-5 sm:p-6">
+            <div className="mb-3 flex items-center gap-3.5">
+              <span className="icono-tarjeta">
+                <ReceiptText size={20} />
+              </span>
+              <h2 className="font-display text-2xl font-semibold text-amari-titulo">Movimientos</h2>
+            </div>
 
             {d.movimientos.length === 0 ? (
-              <div className="tarjeta flex flex-col items-center gap-3 px-6 py-10 text-center">
+              <div className="vacio border-0 bg-transparent py-8">
                 <ReceiptText size={36} className="text-amari-acento" />
                 <p className="text-amari-texto">No hay ventas en este periodo.</p>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="divide-y divide-amari-borde/60">
                 {d.movimientos.map((mv) => {
                   const Icono = mv.tipo === "servicio" ? Scissors : ShoppingBag;
 
                   return (
-                    <article
-                      key={mv.referencia}
-                      className="tarjeta flex items-center gap-3 p-3 text-sm"
-                    >
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amari-bg-soft text-amari-primario">
+                    <article key={mv.referencia} className="flex items-center gap-3.5 py-3 text-sm">
+                      <span className="icono-tarjeta h-10 w-10">
                         <Icono size={18} />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate font-medium text-amari-titulo">
+                        <span className="block truncate font-semibold text-amari-titulo">
                           {mv.cliente} · {mv.referencia}
                         </span>
                         <span className="block truncate text-xs text-amari-acento">
@@ -325,7 +344,7 @@ function VentasAdmin() {
                         </span>
                       </span>
                       <span className="shrink-0 text-right">
-                        <span className="block font-display text-base font-semibold text-amari-titulo">
+                        <span className="block font-display text-lg font-semibold text-amari-titulo">
                           {formatearMoneda(mv.total)}
                         </span>
                         {mv.descuento > 0 && (
@@ -338,7 +357,7 @@ function VentasAdmin() {
                   );
                 })}
                 {d.movimientos.length === 100 && (
-                  <p className="text-center text-xs text-amari-acento">
+                  <p className="pt-3 text-center text-xs text-amari-acento">
                     Se muestran los 100 movimientos más recientes del periodo.
                   </p>
                 )}

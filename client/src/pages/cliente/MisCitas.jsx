@@ -1,126 +1,112 @@
 import { useEffect, useState } from "react";
-import { Plus, CalendarHeart } from "lucide-react";
+import { Link, useOutletContext } from "react-router-dom";
+import { Bell, CalendarHeart, ChevronRight, ClipboardList, Plus, ShoppingBag, ShoppingCart } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-import { getMisCitas, cancelarMiCita, getMiFidelidad } from "../../services/citas.service";
-import TarjetaFidelidad from "../../components/TarjetaFidelidad";import ModalCitaCliente from "../../components/ModalCitaCliente";
-import { ESTADOS_CITA } from "../../config/citas";
-import { aTexto, fechaLarga, horaDe } from "../../utils/fechas";
-import { formatearMoneda, etiquetaPrecio } from "../../utils/formato";
+import { useAhora } from "../../hooks/useAhora";
+import { useCarrito } from "../../hooks/useCarrito";
+import { getMisCitas, getMiFidelidad } from "../../services/citas.service";
+import TarjetaFidelidad from "../../components/TarjetaFidelidad";
+import ModalCitaCliente from "../../components/ModalCitaCliente";
+import TarjetaCita from "../../components/TarjetaCita";
+import TarjetaNivel from "../../components/TarjetaNivel";
+import { aTexto, diaYMes } from "../../utils/fechas";
 
 const dos = (n) => String(n).padStart(2, "0");
 
-const textoAhora = () => {
-  const n = new Date();
-  return `${aTexto(n)} ${dos(n.getHours())}:${dos(n.getMinutes())}`;
+// "2026-11-23 14:30", para compararlo con el inicio de las citas
+const textoDe = (fecha) => `${aTexto(fecha)} ${dos(fecha.getHours())}:${dos(fecha.getMinutes())}`;
+
+const FILTROS = [
+  { id: "todas", texto: "Todas" },
+  { id: "completadas", texto: "Completadas" },
+  { id: "canceladas", texto: "Canceladas" },
+];
+
+const pasaFiltro = (cita, filtro) => {
+  if (filtro === "completadas") return cita.estado === "completada";
+  if (filtro === "canceladas") return ["cancelada", "no_asistio"].includes(cita.estado);
+  return true;
 };
 
-function TarjetaCita({ cita, puedeCancelar, onCambio }) {
-  const [confirmando, setConfirmando] = useState(false);
-  const [enviando, setEnviando] = useState(false);
-  const [error, setError] = useState("");
+// Atajos a lo demás que puede hacer la clienta (en celular están en la barra de abajo)
+function Atajos() {
+  const { noLeidas } = useOutletContext();
+  const { cantidad: enCarrito } = useCarrito();
 
-  const estado = ESTADOS_CITA[cita.estado];
-
-  const cancelar = async () => {
-    setError("");
-    setEnviando(true);
-
-    try {
-      await cancelarMiCita(cita.id);
-      onCambio();
-    } catch (err) {
-      setError(err.response?.data?.mensaje || "No se pudo cancelar la cita");
-      setEnviando(false);
-      setConfirmando(false);
-    }
-  };
+  const atajos = [
+    {
+      to: "/cliente/boutique",
+      icono: ShoppingBag,
+      titulo: "Boutique Amari",
+      detalle: "Mira los productos del estudio y pídelos desde aquí.",
+    },
+    {
+      to: "/cliente/pedidos",
+      icono: ClipboardList,
+      titulo: "Mis pedidos",
+      detalle: "Sigue el estado de tus compras.",
+    },
+    {
+      to: "/cliente/notificaciones",
+      icono: Bell,
+      titulo: "Mis notificaciones",
+      detalle: noLeidas > 0 ? `${noLeidas} sin leer` : "Estás al día.",
+      cuenta: noLeidas,
+    },
+    {
+      to: "/cliente/carrito",
+      icono: ShoppingCart,
+      titulo: "Mi carrito",
+      detalle: enCarrito > 0 ? `${enCarrito} ${enCarrito === 1 ? "artículo" : "artículos"}` : "Está vacío.",
+      cuenta: enCarrito,
+    },
+  ];
 
   return (
-    <article
-      style={{ borderLeftColor: cita.color }}
-      className="tarjeta border-l-4 p-4 text-sm text-amari-titulo"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="font-semibold">{fechaLarga(cita.inicio.slice(0, 10))}</p>
-          <p className="text-amari-acento">
-            {horaDe(cita.inicio)} a {horaDe(cita.fin)} · {cita.empleada}
-          </p>
-        </div>
-        <span
-          className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${estado.clase}`}
-        >
-          {estado.texto}
-        </span>
-      </div>
-
-      <ul className="mt-3 space-y-1">
-        {cita.servicios.map((s) => (
-          <li key={s.id} className="flex justify-between gap-3">
-            <span>{s.nombre}</span>
-            <span className="shrink-0 text-amari-primario-oscuro">{etiquetaPrecio(s)}</span>
+    <section className="tarjeta p-3">
+      <ul className="space-y-1">
+        {atajos.map(({ to, icono: Icono, titulo, detalle, cuenta }) => (
+          <li key={to}>
+            <Link
+              to={to}
+              className="group flex items-center gap-3.5 rounded-2xl p-3 transition hover:bg-amari-bg-soft"
+            >
+              <span className="icono-tarjeta h-11 w-11">
+                <Icono size={20} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-bold text-amari-titulo">{titulo}</span>
+                <span className="block text-sm leading-snug">{detalle}</span>
+              </span>
+              {cuenta > 0 && (
+                <span className="rounded-full bg-amari-primario px-2 py-0.5 text-[11px] font-bold text-white">
+                  {cuenta > 9 ? "9+" : cuenta}
+                </span>
+              )}
+              <ChevronRight
+                size={18}
+                className="shrink-0 text-amari-acento transition group-hover:translate-x-0.5"
+              />
+            </Link>
           </li>
         ))}
       </ul>
-      
-            {cita.descuento > 0 && (
-        <p className="mt-2 text-xs font-semibold text-green-700">
-          Premio de fidelidad aplicado: −{formatearMoneda(cita.descuento)}
-        </p>
-      )}
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-amari-borde pt-3">
-        <p className="font-display text-base font-semibold">
-          Total estimado: {formatearMoneda(cita.total)}
-        </p>
-
-        {puedeCancelar && !confirmando && (
-          <button
-            type="button"
-            onClick={() => setConfirmando(true)}
-            className="rounded-full border border-red-200 px-4 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"
-          >
-            Cancelar cita
-          </button>
-        )}
-
-        {puedeCancelar && confirmando && (
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-amari-acento">¿Seguro?</span>
-            <button
-              type="button"
-              disabled={enviando}
-              onClick={cancelar}
-              className="rounded-full bg-red-600 px-4 py-1.5 font-semibold text-white hover:bg-red-700 disabled:opacity-60"
-            >
-              {enviando ? "Cancelando..." : "Sí, cancelar"}
-            </button>
-            <button
-              type="button"
-              disabled={enviando}
-              onClick={() => setConfirmando(false)}
-              className="rounded-full border border-amari-borde px-4 py-1.5 font-semibold text-amari-primario-oscuro hover:bg-amari-bg-soft"
-            >
-              No
-            </button>
-          </div>
-        )}
-      </div>
-
-      {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-red-600">{error}</p>}
-    </article>
+    </section>
   );
 }
 
 function MisCitas() {
   const { usuario } = useAuth();
+  const ahoraFecha = useAhora();
   const [version, setVersion] = useState(0);
   const [resultado, setResultado] = useState(null);
   const [modal, setModal] = useState(false);
   const [aviso, setAviso] = useState("");
-  const [ahora] = useState(textoAhora);
   const [fidelidad, setFidelidad] = useState(null);
+  const [filtro, setFiltro] = useState("todas");
 
   const clave = String(version);
+  const ahora = textoDe(ahoraFecha);
 
   useEffect(() => {
     let activo = true;
@@ -137,7 +123,7 @@ function MisCitas() {
       activo = false;
     };
   }, [clave]);
-  
+
   useEffect(() => {
     let activo = true;
 
@@ -162,8 +148,16 @@ function MisCitas() {
   // El servidor las manda de la más reciente a la más antigua
   const proximas = citas.filter(esProxima).reverse();
   const historial = citas.filter((c) => !esProxima(c));
+  const historialVisible = historial.filter((c) => pasaFiltro(c, filtro));
+
+  const completadas = citas.filter((c) => c.estado === "completada");
+  const ultimaVisita = completadas.length > 0 ? diaYMes(completadas[0].inicio) : null;
 
   const recargar = () => setVersion((v) => v + 1);
+
+  const tarjetaNivel = !cargando && !error && (
+    <TarjetaNivel visitas={completadas.length} ultimaVisita={ultimaVisita} />
+  );
 
   return (
     <>
@@ -179,7 +173,7 @@ function MisCitas() {
             setAviso("");
             setModal(true);
           }}
-          className="btn-primario"
+          className="btn-primario w-full px-6 sm:w-auto"
         >
           <Plus size={18} /> Agendar cita
         </button>
@@ -189,46 +183,98 @@ function MisCitas() {
         <p className="mb-4 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">{aviso}</p>
       )}
 
-      {fidelidad && <TarjetaFidelidad fidelidad={fidelidad} />}
-      {cargando && <p className="text-center text-amari-primario">Cargando tus citas...</p>}
-      {error && <p className="text-center text-red-600">No se pudieron cargar tus citas.</p>}
+      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0">
+          {fidelidad && <TarjetaFidelidad fidelidad={fidelidad} />}
+          {cargando && <p className="text-center text-amari-primario">Cargando tus citas...</p>}
+          {error && <p className="text-center text-red-600">No se pudieron cargar tus citas.</p>}
 
-      {!cargando && !error && (
-        <>
-          <h2 className="mb-3 font-display text-xl font-semibold text-amari-titulo">
-            Próximas citas
-          </h2>
-
-          {proximas.length === 0 ? (
-            <div className="tarjeta flex flex-col items-center gap-3 px-6 py-10 text-center">
-              <CalendarHeart size={36} className="text-amari-acento" />
-              <p className="text-amari-texto">No tienes citas próximas.</p>
-              <button onClick={() => setModal(true)} className="btn-primario">
-                <Plus size={18} /> Agendar mi cita
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {proximas.map((c) => (
-                <TarjetaCita key={c.id} cita={c} puedeCancelar onCambio={recargar} />
-              ))}
-            </div>
-          )}
-
-          {historial.length > 0 && (
+          {!cargando && !error && (
             <>
-              <h2 className="mb-3 mt-8 font-display text-xl font-semibold text-amari-titulo">
-                Historial
+              <h2 className="mb-3 font-display text-2xl font-semibold text-amari-titulo">
+                Próximas citas
               </h2>
-              <div className="space-y-3">
-                {historial.map((c) => (
-                  <TarjetaCita key={c.id} cita={c} puedeCancelar={false} onCambio={recargar} />
-                ))}
-              </div>
+
+              {proximas.length === 0 ? (
+                <div className="tarjeta flex flex-col items-center gap-3 px-6 py-10 text-center">
+                  <CalendarHeart size={36} className="text-amari-acento" />
+                  <p className="text-amari-texto">No tienes citas próximas.</p>
+                  <button
+                    onClick={() => {
+                      setAviso("");
+                      setModal(true);
+                    }}
+                    className="btn-primario"
+                  >
+                    <Plus size={18} /> Agendar mi cita
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {proximas.map((c, i) => (
+                    <TarjetaCita
+                      key={c.id}
+                      cita={c}
+                      ahora={ahoraFecha}
+                      destacada={i === 0}
+                      puedeCancelar
+                      onCambio={recargar}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {historial.length > 0 && (
+                <>
+                  <div className="mb-3 mt-8 flex flex-wrap items-center justify-between gap-3">
+                    <h2 className="font-display text-2xl font-semibold text-amari-titulo">
+                      Historial
+                    </h2>
+                    <div className="flex flex-wrap gap-2">
+                      {FILTROS.map((f) => (
+                        <button
+                          key={f.id}
+                          type="button"
+                          onClick={() => setFiltro(f.id)}
+                          className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${
+                            filtro === f.id
+                              ? "bg-linear-to-r from-amari-primario to-amari-primario-oscuro text-white shadow-md shadow-amari-primario/30"
+                              : "border border-amari-borde bg-white text-amari-primario-oscuro hover:bg-amari-bg-soft"
+                          }`}
+                        >
+                          {f.texto}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {historialVisible.length === 0 ? (
+                    <p className="text-sm">No hay citas en esta sección.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {historialVisible.map((c) => (
+                        <TarjetaCita
+                          key={c.id}
+                          cita={c}
+                          puedeCancelar={false}
+                          onCambio={recargar}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {tarjetaNivel && <div className="mt-8 xl:hidden">{tarjetaNivel}</div>}
             </>
           )}
-        </>
-      )}
+        </div>
+
+        <div className="hidden space-y-6 xl:block">
+          {tarjetaNivel}
+          <Atajos />
+        </div>
+      </div>
 
       {modal && (
         <ModalCitaCliente

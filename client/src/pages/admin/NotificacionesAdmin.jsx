@@ -8,13 +8,6 @@ import {
 } from "../../services/notificaciones.service";
 import { TIPOS_NOTIFICACION, enlaceWA } from "../../config/notificaciones";
 
-const chip = (activo) =>
-  `rounded-full border px-4 py-1.5 text-sm font-medium transition ${
-    activo
-      ? "border-transparent bg-linear-to-r from-amari-primario to-amari-primario-oscuro text-white shadow-md shadow-amari-primario/30"
-      : "border-amari-borde bg-white text-amari-primario hover:bg-amari-bg-soft"
-  }`;
-
 function NotificacionesAdmin() {
   const [version, setVersion] = useState(0);
   const [resultado, setResultado] = useState(null);
@@ -81,7 +74,7 @@ function NotificacionesAdmin() {
         </div>
         <button
           onClick={() => setPromo((p) => ({ ...p, abierto: !p.abierto }))}
-          className="btn-primario inline-flex items-center gap-2"
+          className="btn-primario px-6"
         >
           <Megaphone size={18} /> Nueva promoción
         </button>
@@ -97,10 +90,10 @@ function NotificacionesAdmin() {
       )}
 
       {promo.abierto && (
-        <div className="tarjeta mb-6 p-5">
+        <div className="tarjeta mb-6 p-5 sm:p-6">
           <label
             htmlFor="promo-texto"
-            className="mb-1 block text-xs font-semibold uppercase tracking-wide text-amari-primario"
+            className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-amari-primario"
           >
             Mensaje para todas las clientas
           </label>
@@ -111,7 +104,7 @@ function NotificacionesAdmin() {
             value={promo.texto}
             onChange={(e) => setPromo((p) => ({ ...p, texto: e.target.value }))}
             placeholder="Ej: Este mes, 15% en Gelish. ¡Agenda tu cita!"
-            className="w-full rounded-xl border border-amari-borde bg-white px-4 py-2 text-sm text-amari-titulo focus:border-amari-primario focus:outline-none focus:ring-2 focus:ring-amari-primario/20"
+            className="entrada"
           />
           {promo.error && <p className="mt-2 text-sm text-red-600">{promo.error}</p>}
           <div className="mt-3 flex items-center justify-between gap-3">
@@ -119,7 +112,7 @@ function NotificacionesAdmin() {
             <button
               onClick={enviarPromo}
               disabled={promo.enviando || promo.texto.trim().length < 10}
-              className="btn-primario disabled:opacity-50"
+              className="btn-primario px-6"
             >
               {promo.enviando ? "Creando..." : "Crear mensajes"}
             </button>
@@ -133,17 +126,28 @@ function NotificacionesAdmin() {
           ["enviada", "Enviadas"],
           ["todas", "Todas"],
         ].map(([v, t]) => (
-          <button key={v} onClick={() => setPestana(v)} className={chip(pestana === v)}>
+          <button
+            key={v}
+            onClick={() => setPestana(v)}
+            className={`chip ${pestana === v ? "chip-activo" : ""}`}
+          >
             {t}
           </button>
         ))}
       </div>
       <div className="mb-5 flex flex-wrap gap-2">
-        <button onClick={() => setTipo("todos")} className={chip(tipo === "todos")}>
+        <button
+          onClick={() => setTipo("todos")}
+          className={`chip ${tipo === "todos" ? "chip-activo" : ""}`}
+        >
           Todos los tipos
         </button>
         {Object.entries(TIPOS_NOTIFICACION).map(([v, t]) => (
-          <button key={v} onClick={() => setTipo(v)} className={chip(tipo === v)}>
+          <button
+            key={v}
+            onClick={() => setTipo(v)}
+            className={`chip ${tipo === v ? "chip-activo" : ""}`}
+          >
             {t.texto}
           </button>
         ))}
@@ -153,7 +157,7 @@ function NotificacionesAdmin() {
       {resultado?.error && <p className="text-center text-red-600">No se pudieron cargar las notificaciones.</p>}
 
       {resultado?.data && visibles.length === 0 && (
-        <div className="tarjeta flex flex-col items-center gap-3 px-6 py-10 text-center">
+        <div className="vacio">
           <Bell size={36} className="text-amari-acento" />
           <p className="text-amari-texto">No hay notificaciones en esta vista.</p>
         </div>
@@ -166,10 +170,10 @@ function NotificacionesAdmin() {
           const enlace = enlaceWA(n.telefono, n.mensaje);
 
           return (
-            <article key={n.id} className="tarjeta p-4">
+            <article key={n.id} className="tarjeta p-5 sm:p-6">
               <div className="flex flex-wrap items-center gap-2">
                 <span
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${t.color}`}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${t.color}`}
                 >
                   <Icono size={14} /> {t.texto}
                 </span>
@@ -177,7 +181,7 @@ function NotificacionesAdmin() {
                   {n.cliente}
                 </span>
                 <span
-                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${
                     n.estado === "pendiente" ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"
                   }`}
                 >
@@ -185,7 +189,7 @@ function NotificacionesAdmin() {
                 </span>
               </div>
 
-              <p className="mt-3 rounded-xl bg-amari-bg-soft p-3 text-sm text-amari-texto">{n.mensaje}</p>
+              <p className="mt-3 rounded-2xl bg-amari-bg-soft/70 px-4 py-3 text-sm leading-relaxed text-amari-texto">{n.mensaje}</p>
               <p className="mt-2 text-xs text-amari-acento">Generada {n.creada_en}</p>
 
               <div className="mt-3 flex flex-wrap gap-2">
@@ -194,24 +198,24 @@ function NotificacionesAdmin() {
                     href={enlace}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-green-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-green-600/25 transition hover:bg-green-700"
                   >
                     <MessageCircle size={16} /> Enviar WA
                   </a>
                 ) : (
-                  <span className="rounded-xl bg-gray-100 px-4 py-2 text-sm text-gray-500">Sin teléfono</span>
+                  <span className="rounded-full bg-gray-100 px-5 py-2 text-sm text-gray-500">Sin teléfono</span>
                 )}
                 {n.estado === "pendiente" && (
                   <>
                     <button
                       onClick={() => accion(() => marcarEnviada(n.id))}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-amari-borde px-4 py-2 text-sm font-semibold text-amari-primario hover:bg-amari-bg-soft"
+                      className="btn-secundario py-2"
                     >
                       <Check size={16} /> Marcar enviado
                     </button>
                     <button
                       onClick={() => accion(() => descartarNotificacion(n.id))}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
+                      className="btn-peligro px-5"
                     >
                       <Trash2 size={16} /> Descartar
                     </button>

@@ -44,7 +44,7 @@ function MisNotificaciones() {
         {noLeidas > 0 && (
           <button
             onClick={() => marcar(marcarTodasLeidas)}
-            className="inline-flex items-center gap-2 rounded-xl border border-amari-borde px-4 py-2 text-sm font-semibold text-amari-primario hover:bg-amari-bg-soft"
+            className="btn-secundario"
           >
             <CheckCheck size={16} /> Marcar todas como leídas
           </button>
@@ -55,7 +55,7 @@ function MisNotificaciones() {
       {resultado?.error && <p className="text-center text-red-600">No se pudieron cargar tus notificaciones.</p>}
 
       {resultado?.data && lista.length === 0 && (
-        <div className="tarjeta flex flex-col items-center gap-3 px-6 py-10 text-center">
+        <div className="vacio">
           <Bell size={36} className="text-amari-acento" />
           <p className="text-amari-texto">Aún no tienes notificaciones.</p>
         </div>
@@ -70,32 +70,39 @@ function MisNotificaciones() {
           return (
             <article
               key={n.id}
-              className={`tarjeta p-4 ${!n.leida ? "border-l-4 border-l-amari-primario" : "opacity-80"}`}
+              className={`tarjeta relative p-5 sm:p-6 ${n.leida ? "opacity-80 shadow-sm" : ""}`}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <span
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${t.color}`}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${t.color}`}
                 >
                   <Icono size={14} /> {t.texto}
                 </span>
+                {!n.leida && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amari-primario-oscuro">
+                    <span className="h-2 w-2 rounded-full bg-amari-primario" /> Nueva
+                  </span>
+                )}
                 <span className="flex-1 text-right text-xs text-amari-acento">{n.creada_en}</span>
               </div>
 
-              <p className="mt-3 text-sm text-amari-texto">{n.mensaje}</p>
+              <p className="mt-3 rounded-2xl bg-amari-bg-soft/70 px-4 py-3 text-sm leading-relaxed text-amari-texto">
+                {n.mensaje}
+              </p>
 
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 <a
                   href={enlace}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-green-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-green-600/25 transition hover:bg-green-700"
                 >
                   <MessageCircle size={16} /> Ver en WA
                 </a>
                 {!n.leida && (
                   <button
                     onClick={() => marcar(() => marcarLeida(n.id))}
-                    className="rounded-xl border border-amari-borde px-4 py-2 text-sm font-semibold text-amari-primario hover:bg-amari-bg-soft"
+                    className="btn-secundario py-2"
                   >
                     Marcar leída
                   </button>
