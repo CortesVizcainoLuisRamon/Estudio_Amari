@@ -142,7 +142,7 @@ function AppLayout() {
             )}
           </span>
           <div className="min-w-0 leading-tight">
-            <p className="truncate text-sm font-semibold text-amari-titulo">
+            <p className="line-clamp-2 break-words text-sm font-semibold text-amari-titulo">
               {nombre} {apellidos}
             </p>
             <p className="text-xs text-amari-acento">{ETIQUETA_ROL[usuario.rol]}</p>
