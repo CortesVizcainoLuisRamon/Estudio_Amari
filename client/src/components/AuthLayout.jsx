@@ -71,16 +71,13 @@ function AuthLayout({ titulo, subtitulo, activa, children }) {
           merece atención especial.”
         </p>
 
-        <p className="relative mt-4 text-[0.7rem] tracking-[0.25em] text-white/85 md:hidden">
-          NAILS · HAIR · LASHES
-        </p>
-        <ul className="relative mt-8 hidden max-w-md flex-wrap justify-center gap-2.5 md:flex">
+        <ul className="relative mt-6 flex max-w-xs flex-wrap justify-center gap-2 md:mt-8 md:max-w-md md:gap-2.5">
           {SERVICIOS.map(({ nombre, Icono }) => (
             <li
               key={nombre}
-              className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] backdrop-blur-sm"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/35 bg-white/15 px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.12em] backdrop-blur-sm md:gap-2 md:px-4 md:py-2 md:text-xs md:tracking-[0.14em]"
             >
-              <Icono size={15} />
+              <Icono size={13} className="md:h-[15px] md:w-[15px]" />
               {nombre}
             </li>
           ))}
